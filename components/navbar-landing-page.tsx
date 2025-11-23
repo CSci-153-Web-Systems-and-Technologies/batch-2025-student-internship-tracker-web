@@ -1,7 +1,10 @@
+"use client";
 import { Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 export function NavBar() {
+  const router = useRouter();
     return(
         <nav className="border-b border-white/10 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -17,17 +20,17 @@ export function NavBar() {
                 Features
               </a>
               <a href="#about" className="text-slate-300 hover:text-white transition-colors">
-                About
+                About Us
               </a>
-              <a href="#pricing" className="text-slate-300 hover:text-white transition-colors">
+              <a href="#contact" className="text-slate-300 hover:text-white transition-colors">
                 Contact
               </a>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="ghost" className="text-white hover:bg-white/10" >
+              <Button variant="ghost" className="text-white hover:bg-white/10" onClick={() => router.push('@/app/(auth)/auth/login')}>
                 Log In 
               </Button>
-              <Button className="bg-blue-500 hover:bg-blue-600 text-white">
+              <Button className="bg-blue-500 hover:bg-blue-600 text-white " onClick={() => router.push('@/app/(auth)/auth/login')}>
                 Get Started
               </Button>
             </div>

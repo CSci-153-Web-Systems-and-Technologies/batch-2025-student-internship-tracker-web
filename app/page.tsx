@@ -1,12 +1,18 @@
+"use client";
+
 import { NavBar } from "@/components/navbar-landing-page";
+import { Card, CardContent } from "@/components/ui/card";
 import { Rocket, Calendar, ListTodo, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Card, CardContent } from "@/components/ui/card";
 
 export default function Home() {
+  const router = useRouter();
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900">
+       
        <NavBar />
 
        <section className="relative overflow-hidden">
@@ -31,13 +37,13 @@ export default function Home() {
                   </p>
 
                   <div className="flex flex-col sm:flex-row gap-4">
-                    <Button size="lg" className="bg-blue-500 hover:bg-blue-600 text-white">
+                    <Button size="lg" className="bg-blue-500 hover:bg-blue-600 text-white" onClick={()=> router.push('@/app/(auth)/auth/login')} >
                       Get Started
                     </Button>
                     
-                    <Button size="lg" variant="outline" className="border-slate-600 text-blue-500 hover:bg-white/10 bg-white">
+                    <Link href="https://www.youtube.com/shorts/ybgTBIzWEpM" className="inline-flex items-center justify-center px-4 py-2 rounded-md border border-slate-600 text-blue-500 hover:bg-white/10 bg-white">
                       Watch Demo
-                    </Button>
+                    </Link>
                   </div>
 
                   <div className ="flex item-center gap-8 pt-4 ">
@@ -132,7 +138,7 @@ export default function Home() {
                 Join thousands of teams already building amazing products with LaunchPad. Start your free trial today.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                <Button size="lg" className="bg-white text-blue-600 hover:bg-slate-100">
+                <Button size="lg" className="bg-white text-blue-600 hover:bg-slate-100" onClick={()=>router.push('@/app/(auth)/auth/login')}>
                   Get Started
                 </Button>
               </div>
@@ -144,49 +150,27 @@ export default function Home() {
 
        <section id="contact" className="py-20 lg:py-32">
         <footer className="border-t border-white/10 py-12">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid md:grid-cols-4 gap-8">
-              <div className="space-y-4">
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                    <Rocket className="w-4 h-4 text-white" />
-                  </div>
-                  <span className="text-white ">LaunchPad</span>
-                </div>
-                <p className="text-slate-400">
-                  Building the future, one launch at a time.
-                </p>
+            <div className="flex flex-wrap gap-24 justify-center ">
+              <div className="text-center pr-20">
+                <h4 className="text-white mb-4">Product</h4>
+                <ul className="flex gap-6">
+                  <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Features</a></li>
+                  <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Pricing</a></li>
+                  <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Documentation</a></li>
+                </ul>
               </div>
-            <div>
-              <h4 className="text-white mb-4">Contacts</h4>
-              <ul className="space-y-2">
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Email</a></li>
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Contact Number</a></li>
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Facebook</a></li>
-              </ul>
+              <div className="text-center pl-20">
+                <h4 className="text-white mb-4">Contact</h4>
+                <ul className="flex gap-6">
+                  <li><a href="mailto:Officialketchupped@gmail.com" className="text-slate-400 hover:text-white transition-colors">Gmail</a></li>
+                  <li><a href="https://github.com/Officialketchupped-debug" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white transition-colors">Github</a></li>
+                </ul>
+              </div>
             </div>
-            <div>
-              <h4 className="text-white mb-4">Company</h4>
-              <ul className="space-y-2">
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors">About</a></li>
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Blog</a></li>
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Careers</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white mb-4">Legal</h4>
-              <ul className="space-y-2">
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Privacy</a></li>
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Terms</a></li>
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Security</a></li>
-              </ul>
-            </div>
-          </div>
           <div className="mt-12 pt-8 border-t border-white/10 text-center text-slate-400">
             <p>© 2025 LaunchPad. All rights reserved.</p>
           </div>
-          </div>
-        </footer>
+      </footer>
        </section>
     </main>
   );
