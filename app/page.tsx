@@ -154,16 +154,16 @@ export default function Home() {
               <div className="text-center pr-20">
                 <h4 className="text-white mb-4">Product</h4>
                 <ul className="flex gap-6">
-                  <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Features</a></li>
-                  <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Pricing</a></li>
-                  <li><a href="#" className="text-slate-400 hover:text-white transition-colors">Documentation</a></li>
+                  <li><Link href="#" className="text-slate-400 hover:text-white transition-colors">Features</Link></li>
+                  <li><Link href="#" className="text-slate-400 hover:text-white transition-colors">Pricing</Link></li>
+                  <li><Link href="#" className="text-slate-400 hover:text-white transition-colors">Documentation</Link></li>
                 </ul>
               </div>
               <div className="text-center pl-20">
                 <h4 className="text-white mb-4">Contact</h4>
                 <ul className="flex gap-6">
-                  <li><a href="mailto:Officialketchupped@gmail.com" className="text-slate-400 hover:text-white transition-colors">Gmail</a></li>
-                  <li><a href="https://github.com/Officialketchupped-debug" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white transition-colors">Github</a></li>
+                  <li><Link href="mailto:Officialketchupped@gmail.com" className="text-slate-400 hover:text-white transition-colors">Gmail</Link></li>
+                  <li><Link href="https://github.com/Officialketchupped-debug" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white transition-colors">Github</Link></li>
                 </ul>
               </div>
             </div>
