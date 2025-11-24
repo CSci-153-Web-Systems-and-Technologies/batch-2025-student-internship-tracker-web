@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+import { NavBar } from "@/components/navbar-landing-page";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -19,22 +20,16 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-export default function RootLayout({
-  children,
-}: Readonly<{
+interface RootLayoutProps {
   children: React.ReactNode;
-}>) {
+}
+
+export default function RootLayout({children}: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.className} antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+      <body className={`${geistSans.className} antialiased min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900`}>
+        <NavBar />
           {children}
-        </ThemeProvider>
       </body>
     </html>
   );
