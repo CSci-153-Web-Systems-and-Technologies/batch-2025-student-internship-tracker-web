@@ -1,5 +1,6 @@
+'use client';
 import Link from "next/link";
-
+import { Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,14 +12,21 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signup } from "@/lib/auth-actions";
-
+import { useRouter} from "next/navigation";
 export function SignUpForm() {
+
+  
   return (
-    <Card className="mx-auto max-w-sm">
+    <Card className="mx-auto max-w-sm bg-slate-900/50 border-slate-800 backdrop-blur-sm">
+       <div className="flex justify-center pt-6">
+          <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
+            <Rocket className="w-6 h-6 text-white" />
+          </div>
+       </div>
       <CardHeader>
-        <CardTitle className="text-xl">Sign Up</CardTitle>
-        <CardDescription>
-          Enter your information to create an account
+        <CardTitle className="text-xl text-center text-white">Create your account</CardTitle>
+        <CardDescription className="text-center text-slate-400">
+          Join LaunchPad and start building amazing things
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -26,58 +34,69 @@ export function SignUpForm() {
           <div className="grid gap-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="first-name">First name</Label>
+                <Label className="text-slate-300" htmlFor="first-name">First name</Label>
                 <Input
                   name="first-name"
                   id="first-name"
-                  placeholder="Max"
+                  placeholder="James&lsquo;&lsquo;nel&rsquo;&rsquo;"
+                  className="border rounded-md p-2 bg-slate-950/50 border-slate-700 text-white"
                   required
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="last-name">Last name</Label>
+                <Label className="text-slate-300" htmlFor="last-name">Last name</Label>
                 <Input
                   name="last-name"
                   id="last-name"
-                  placeholder="Robinson"
+                  placeholder="Chavez"
+                  className="border rounded-md p-2 bg-slate-950/50 border-slate-700 text-white"
                   required
+                  
                 />
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label className="text-slate-300" htmlFor="email">Email</Label>
               <Input
                 name="email"
                 id="email"
                 type="email"
                 placeholder="m@example.com"
+                className="border rounded-md p-2 bg-slate-950/50 border-slate-700 text-white"
                 required
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
-              <Input name="password" id="password" type="password" />
+              <Label className="text-slate-300 " htmlFor="password">Password</Label>
+              <Input 
+                name="password" 
+                id="password" 
+                type="password"
+                className="border rounded-md p-2 bg-slate-950/50 border-slate-700 text-white"
+                placeholder="*****"
+                required
+                />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="role">Account Type</Label>
-                <select
+              <Label className="text-slate-300 " htmlFor="role">Account Type</Label>
+                <select 
                   id="role"
                   name="role"
-                  className="border rounded-md p-2"
+                  className="border rounded-md p-2 bg-slate-950/50 border-slate-700 text-white"
                   required
                 >
                   <option value="student">Student</option>
                   <option value="mentor">Mentor</option>
                 </select>
             </div>
-            <Button formAction={signup} type="submit" className="w-full">
+            <Button formAction={signup} type="submit" className="w-full bg-blue-500 hover:bg-blue-600 text-white">
               Create an account
             </Button>
           </div>
         </form>
-        <div className="mt-4 text-center text-sm">
+        <div className="mt-4 text-center text-sm text-slate-400">
           Already have an account?{" "}
-          <Link href="/login" className="underline">
+          <Link href="/login" className="underline text-blue-400 hover:text-blue-300 transition-color">
             Sign in
           </Link>
         </div>

@@ -1,5 +1,5 @@
 import Link from "next/link"
-
+import {Rocket} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -14,19 +14,24 @@ import { login } from "@/lib/auth-actions"
 
 export function LoginForm() {
   return (
-    <Card className="mx-auto max-w-sm">
+    <Card className="bg-slate-900/50 border-slate-800 backdrop-blur-sm">
       <CardHeader>
-        <CardTitle className="text-2xl">Login</CardTitle>
-        <CardDescription>
-          Enter your email below to login to your account
+        <div className="flex justify-center">
+          <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
+            <Rocket className="w-6 h-6 text-white" />
+          </div>
+        </div>
+        <CardTitle className="text-2xl text-center text-white">Login</CardTitle>
+        <CardDescription className="text-center text-slate-400">
+          Enter your credentials to access your account
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form action="">
             <div className="grid gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
+                <Label className="text-slate-300" htmlFor="email">Email</Label>
+                <Input className="border-slate-400 text-white"
                   id="email"
                   name="email"
                   type="email"
@@ -36,21 +41,26 @@ export function LoginForm() {
               </div>
               <div className="grid gap-2">
                 <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                  <Link href="#" className="ml-auto inline-block text-sm underline">
+                  <Label className="text-slate-300" htmlFor="password">Password</Label>
+                  <Link href="#" className="ml-auto inline-block text-sm underline text-blue-400 hover:text-blue-300 transition-color">
                     Forgot your password?
                   </Link>
                 </div>
-                <Input id="password" name="password" type="password" required />
+                <Input className="border-slate-400 text-white"
+                    id="password" 
+                    name="password" 
+                    type="password" 
+                    placeholder="*****" 
+                    required />
               </div>
-              <Button type="submit" formAction={login} className="w-full">
+              <Button type="submit" formAction={login} className="w-full bg-blue-500 hover:bg-blue-600 text-white">
                 Login
               </Button>
             </div>
         </form>
-        <div className="mt-4 text-center text-sm">
+        <div className="mt-4 text-center text-sm text-slate-400">
           Don&apos;t have an account?{" "}
-          <Link href="/signup" className="underline">
+          <Link href="/signup" className="underline text-blue-400 hover:text-blue-300 transition-color">
             Sign up
           </Link>
         </div>
