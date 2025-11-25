@@ -58,6 +58,18 @@ export function SignUpForm() {
               <Label htmlFor="password">Password</Label>
               <Input name="password" id="password" type="password" />
             </div>
+            <div className="grid gap-2">
+              <Label htmlFor="role">Account Type</Label>
+                <select
+                  id="role"
+                  name="role"
+                  className="border rounded-md p-2"
+                  required
+                >
+                  <option value="student">Student</option>
+                  <option value="mentor">Mentor</option>
+                </select>
+            </div>
             <Button formAction={signup} type="submit" className="w-full">
               Create an account
             </Button>

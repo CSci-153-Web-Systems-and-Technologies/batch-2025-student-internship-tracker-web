@@ -14,14 +14,25 @@ export async function login(formData: FormData) {
     password: formData.get("password") as string,
   };
 
-  const { error } = await supabase.auth.signInWithPassword(data);
+  const { data: authData, error } = await supabase.auth.signInWithPassword(data);
 
   if (error) {
     redirect("/error");
   }
+  const user = authData.user;
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
 
   revalidatePath("/", "layout");
-  redirect("/");
+
+  if (profile?.role === "mentor") {
+    redirect("/mentor/dashboard");
+  }
+  redirect("/student/dashboard");
 }
 
 export async function signup(formData: FormData) {
@@ -31,6 +42,8 @@ export async function signup(formData: FormData) {
   // in practice, you should validate your inputs
   const firstName = formData.get("first-name") as string;
   const lastName = formData.get("last-name") as string;
+  const role = formData.get("role") as string;
+
   const data = {
     email: formData.get("email") as string,
     password: formData.get("password") as string,
@@ -38,18 +51,19 @@ export async function signup(formData: FormData) {
       data: {
         full_name: `${firstName + " " + lastName}`,
         email: formData.get("email") as string,
+        role: role
       },
     },
   };
 
-  const { error } = await supabase.auth.signUp(data);
+  const { data: signupData, error } = await supabase.auth.signUp(data);
 
   if (error) {
     redirect("/error");
   }
 
   revalidatePath("/", "layout");
-  redirect("/");
+  redirect("/emailconfirm")
 }
 
 export async function signout() {
