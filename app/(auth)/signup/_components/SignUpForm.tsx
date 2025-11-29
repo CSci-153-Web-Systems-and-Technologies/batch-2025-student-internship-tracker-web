@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signup } from "@/lib/auth-actions";
-import { useRouter} from "next/navigation";
+
 export function SignUpForm() {
 
   

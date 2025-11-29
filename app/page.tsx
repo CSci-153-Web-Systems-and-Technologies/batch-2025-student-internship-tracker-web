@@ -1,6 +1,6 @@
 "use client";
 
-import { NavBar } from "@/components/navbar-landing-page";
+import { NavBar } from "@/components/navbar-unauthenticated"; 
 import { Card, CardContent } from "@/components/ui/card";
 import { Rocket, Calendar, ListTodo, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,8 @@ import Image from "next/image";
 export default function Home() {
   const router = useRouter();
   return (
-    <main>      
+    <main>
+      <NavBar/>      
        <section className="relative overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
             <div className = "grid lg:grid-cols-2 gap-12 items-center">
