@@ -1,6 +1,6 @@
 "use client";
 
-import { NavBar } from "@/components/navbar-landing-page";
+import { NavBar } from "@/components/navbar-unauthenticated"; 
 import { Card, CardContent } from "@/components/ui/card";
 import { Rocket, Calendar, ListTodo, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,10 +11,8 @@ import Image from "next/image";
 export default function Home() {
   const router = useRouter();
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900">
-       
-       <NavBar />
-
+    <main>
+      <NavBar/>      
        <section className="relative overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
             <div className = "grid lg:grid-cols-2 gap-12 items-center">
@@ -37,7 +35,7 @@ export default function Home() {
                   </p>
 
                   <div className="flex flex-col sm:flex-row gap-4">
-                    <Button size="lg" className="bg-blue-500 hover:bg-blue-600 text-white" onClick={()=> router.push('@/app/(auth)/auth/login')} >
+                    <Button size="lg" className="bg-blue-500 hover:bg-blue-600 text-white" onClick={()=> router.push('/login')} >
                       Get Started
                     </Button>
                     
@@ -78,12 +76,8 @@ export default function Home() {
        <section id ="features" className="py-20 lg:py-32">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16 space-y-1">
-              <h2 className="text-slate-300">
-                Everything You Need to Succeed
-              </h2>
-              <p className="text-white text-lg max-w-2xl mx-auto font-extrabold">
-                Features to Supercharge Your Internship Experience
-              </p>
+              <h2 className="text-slate-300">Everything You Need to Succeed</h2>
+              <p className="text-white text-lg max-w-2xl mx-auto font-extrabold"> Features to Supercharge Your Internship Experience </p>
             </div> 
           </div>
 
@@ -131,19 +125,17 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 to-purple-600 p-12 lg:p-20">
             <div className="relative z-10 text-center space-y-6">
-              <h2 className="text-white">
-                Ready to Launch?
-              </h2>
+              <h2 className="text-white"> Ready to Launch? </h2>
               <p className="text-blue-100 text-lg max-w-2xl mx-auto">
                 Join thousands of teams already building amazing products with LaunchPad. Start your free trial today.
-              </p>
+                </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                <Button size="lg" className="bg-white text-blue-600 hover:bg-slate-100" onClick={()=>router.push('@/app/(auth)/auth/login')}>
-                  Get Started
+                <Button size="lg" className="bg-white text-blue-600 hover:bg-slate-100" onClick={()=>router.push('/app/(auth)/login')}>
+    Get Started
                 </Button>
               </div>
             </div>
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMzLjMxNCAwIDYgMi42ODYgNiA2cy0yLjY4NiA2LTYgNi02LTIuNjg2LTYtNiAyLjY4Ni02IDYtNiIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9Ii4xIi8+PC9nPjwvc3ZnPg==')] opacity-20"></div>
+            <div className="absolute inset-0 bg-blue-500 opacity-20"></div>
           </div>
         </div>
       </section>
