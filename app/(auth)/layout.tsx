@@ -1,4 +1,4 @@
-import {NavBar} from "@/components/navbar-unauthenticated";
+import {NavBar} from "@/components/navbar-main";
 
 interface AuthLayoutProps {
   children: React.ReactNode;

@@ -28,11 +28,13 @@ export async function login(formData: FormData) {
     .single();
 
   revalidatePath("/", "layout");
+  redirect("/organization");
 
-  if (profile?.role === "mentor") {
+  /*if (profile?.role === "mentor") {
     redirect("/mentor/dashboard");
   }
   redirect("/student/dashboard");
+  */
 }
 
 export async function signup(formData: FormData) {

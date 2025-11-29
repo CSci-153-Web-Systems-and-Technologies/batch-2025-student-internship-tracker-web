@@ -1,6 +1,6 @@
 "use client";
 
-import { NavBar } from "@/components/navbar-unauthenticated"; 
+import { NavBar } from "@/components/navbar-main"; 
 import { Card, CardContent } from "@/components/ui/card";
 import { Rocket, Calendar, ListTodo, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
