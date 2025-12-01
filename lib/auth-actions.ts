@@ -78,3 +78,15 @@ export async function signout() {
 
   redirect("/logout");
 }
+
+/*async function UserDetails() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getClaims();
+
+  if (error || !data?.claims) {
+    redirect("/login");
+  }
+
+  return JSON.stringify(data.claims, null, 2);
+}
+  */
