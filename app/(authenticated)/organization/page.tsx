@@ -9,7 +9,7 @@ export default async function OrganizationPage() {
     const { user, isMentor } = await getUserProfile();
 
     const { data: memberships}  = await supabase
-      .from("organization_memberships")
+      .from("organization_members")
       .select("org_id,organizations(*)")
       .eq("user_id", user?.id) as {data: MembershipWithOrg[] | null};
 

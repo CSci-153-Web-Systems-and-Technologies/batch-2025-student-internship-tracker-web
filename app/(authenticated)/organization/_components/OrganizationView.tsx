@@ -6,13 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 
-export default function OrganizationView({
-  projects,
-  isMentor,
-}: {
-  projects: any[];
-  isMentor: boolean;
-}) {
+export default function OrganizationView({projects,isMentor,}: { projects: any[];isMentor: boolean;}) {
   const router = useRouter();
 
   return (
@@ -69,6 +63,7 @@ export default function OrganizationView({
             <Card
               key={index}
               className="bg-slate-900/50 border-slate-800 backdrop-blur-sm hover:bg-slate-900/70 transition-all group cursor-pointer"
+              onClick={()=>router.push(`/dashboard/${project.id}`)}
             >
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
@@ -77,7 +72,7 @@ export default function OrganizationView({
                       <h3 className="text-white mb-1">{project.name}</h3>
                       <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-white transition-colors" />
                     </div>
-                    <p className="text-slate-400">Organization</p>
+                    <p className="text-slate-400">{project.description}</p>
                   </div>
                 </div>
               </CardContent>

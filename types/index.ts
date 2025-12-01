@@ -6,5 +6,6 @@ export type MembershipWithOrg ={
     invite_code: string;
     created_by: string;
     created_at: string;
+    description: string;
   };
 };
