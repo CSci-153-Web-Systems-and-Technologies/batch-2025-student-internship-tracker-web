@@ -39,7 +39,10 @@ export default function OrganizationView({
 
           <div className="ml-auto flex items-center gap-2">
             <Button asChild>
-              <span className="flex items-center">
+              <span 
+                className="flex items-center"
+                onClick={() => router.push("/join_organization")}
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Join Org
               </span>

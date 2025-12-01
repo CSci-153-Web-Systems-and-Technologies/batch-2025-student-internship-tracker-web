@@ -1,23 +1,21 @@
 "use server";
 import { createClient } from "./supabase/server";
-import { redirect } from "next/navigation";
+import { redirect} from "next/navigation";
 
 export async function getUserProfile() {
     const supabase = await createClient();
-    const { data: {user} } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) {
-        if (!user) return { user: null, profile: null, isMentor: false };
-    }
+    if (!user) return { user: null, profile: null, isMentor: false };
 
-    const {data: profile} = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
+    const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
 
-      
     const isMentor = profile?.role === "mentor";
+
     return { user, profile, isMentor };
 }
 
@@ -27,16 +25,11 @@ export async function CreateOrganization(formData: FormData) {
     const name = formData.get("name") as string;
     const description = formData.get("description") as string;
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Not authenticated");
-
-    const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
-
-    if (profile?.role !== "mentor") {
+    const { user, isMentor } = await getUserProfile();
+    if (!user){
+        throw new Error("Not authenticated");
+    }
+    if (!isMentor){
         throw new Error("Only mentors can create an organization");
     }
 
@@ -53,10 +46,7 @@ export async function CreateOrganization(formData: FormData) {
         .select()
         .single();
 
-    if (error) {
-        console.error("ORG INSERT ERROR:", error);
-        throw error;
-    }
+    if (error) throw error;
 
     await supabase
         .from("organization_members")
@@ -68,3 +58,43 @@ export async function CreateOrganization(formData: FormData) {
 
     redirect("/organization");
 }
+
+export async function JoinOrganization(formData: FormData) {
+    const inviteCode = formData.get("inviteCode") as string;
+
+    if (!inviteCode) {
+        throw new Error("Invite code is missing");
+    }
+
+    const supabase = await createClient();
+    const { user, isMentor } = await getUserProfile();
+
+    
+
+    if (!user) throw new Error("Not authenticated");
+
+    const { data: org, error: orgError } = await supabase
+        .from("organizations")
+        .select("id")
+        .eq("invite_code", inviteCode)
+        .single();
+    
+    if(orgError || !org) throw new Error("Invalid invite code");
+
+    const { error: memberError } = await supabase
+        .from("organization_members")
+        .insert({
+            org_id: org.id,
+            user_id: user.id,
+            role: isMentor ? "mentor":"student"
+    });
+
+    if (memberError) {
+        console.error(memberError);
+        throw new Error("Could not join organization");
+    }
+
+
+    redirect("/organization");
+}
+
