@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import {
  Sidebar,
   SidebarContent,
@@ -16,7 +17,8 @@ import {
 import { LayoutDashboard, Calendar, ListTodo } from "lucide-react";
  
 export function AppSidebar() {
-  return (
+  const { org_id } = useParams() as { org_id: string };
+  return(
     <Sidebar
       collapsible="icon"
       className="transition-all duration-300 w-16 hover:w-40 bg-slate-900 text-white border-r border-white/10"
@@ -34,7 +36,7 @@ export function AppSidebar() {
             {/* Dashboard */}
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
-                <Link href="/dashboard">
+                <Link href = {`/dashboard/${org_id}`}>
                   <LayoutDashboard className="h-4 w-4" />
                   <span className="
                       ml-2 
@@ -48,7 +50,7 @@ export function AppSidebar() {
             {/* Tasks */}
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
-                <Link href="/dashboard/tasks">
+                <Link href = {`/dashboard/${org_id}/tasks`}>
                   <ListTodo className="h-4 w-4" />
                   <span className="
                       ml-2 
@@ -62,7 +64,7 @@ export function AppSidebar() {
             {/* Calendar */}
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
-                <Link href="/dashboard/calendar">
+                <Link href = {`/dashboard/${org_id}/calendar`}>
                   <Calendar className="h-4 w-4" />
                   <span className="
                       ml-2 
