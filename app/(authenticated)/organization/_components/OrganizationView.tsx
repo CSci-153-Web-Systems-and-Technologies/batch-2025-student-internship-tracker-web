@@ -13,7 +13,7 @@ export default function OrganizationView({projects,isMentor,}: { projects: any[]
     <main>
       <div className="relative w-full h-full p-8 overflow-auto">
         {/* Search and Controls */}
-        <div className="flex items-center gap-4 mb-8 w-full h-full p-8">
+        <div className="flex items-center gap-4 mb-8 w-full h-full pt-8">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input
@@ -35,7 +35,7 @@ export default function OrganizationView({projects,isMentor,}: { projects: any[]
             <Button asChild>
               <span 
                 className="flex items-center"
-                onClick={() => router.push("/join_organization")}
+                onClick={() => router.push("/organization/forms/join_organization")}
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Join Org
@@ -47,7 +47,7 @@ export default function OrganizationView({projects,isMentor,}: { projects: any[]
               <Button className="bg-green-600 hover:bg-green-700" asChild>
                 <span
                   className="flex items-center"
-                  onClick={() => router.push("/create_organization")}
+                  onClick={() => router.push("/organization/forms/create_organization")}
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Create Org
