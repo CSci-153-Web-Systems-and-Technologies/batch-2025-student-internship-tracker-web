@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UserPlus } from "lucide-react";
-import { JoinOrganization } from "@/lib/user-actions";
+import { JoinOrganization } from "@/lib/org-actions";
 
 export default function JoinOrgForm() {
   return (

@@ -1,5 +1,30 @@
 import { ColumnDef } from '@tanstack/react-table';  
 
+
+//Enums//
+export enum TaskType {
+  BUG = "bug",
+  DOCUMENTATION = "documentation",
+  FEATURE = "feature",
+  REFACTOR = "refactor",
+}
+
+export enum TaskPriority {
+  LOW = "low",
+  MEDIUM = "medium",
+  HIGH = "high",
+}
+
+export enum TaskStatus {
+  TODO = "todo",
+  IN_PROGRESS = "in_progress",
+  DONE = "done",
+  VERIFYING = "verifying",
+  CANCELLED = "cancelled",
+}
+
+
+//Types//
 export type MembershipWithOrg ={
     org_id : string;
     organizations: {
@@ -12,17 +37,42 @@ export type MembershipWithOrg ={
   };
 };
 
-export type Task = {
+
+
+export type Project = {
   id: string;
-  type: "bug" | "documentation" | "feature" | "refactor";
-  project_id: string;
+  org_id: string;
+  name: string;
   description: string;
-  due_date: Date;
-  status: "todo" | "in_progress" | "verifying" | "cancelled" | "completed";
-  priority: "low" | "medium" | "high";
+  created_by: string;
+  created_at: string;
+}
+
+export type Task = {
+  id : string;
+  org_id: string;
+  title: string;
+  description: string;
+  type: TaskType;
+  priority: TaskPriority;
+  status: TaskStatus;
+  assigned_to: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  due_date: string;
+  project_id: string;
+  file_submission: string;
 };
 
  export interface DataTableProps<TData, TValue>{
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+}
+
+//Interface Prop
+export interface ProjectSelectorProps{
+  projects: Project[];
+  selected: string | "";
+  onChange: (value:string) => void;
 }
