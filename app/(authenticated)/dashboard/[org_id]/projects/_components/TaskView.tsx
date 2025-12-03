@@ -1,52 +1,54 @@
 "use client"
-
-import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Suspense,useState } from "react";
 import ProjectSelect from "./ProjectSelect";
-import TasksTable from "./TaskTable";
-import { Task } from "@/types"; 
+import TaskLoader from "./TaskLoader";
 import { Project } from "@/types";
 
 export default function TasksView({ projects }: { projects: Project[] }) {
-  const supabase = createClient();
+  const [selectedProject, setSelectedProject] = useState(
+    projects[0]?.id ?? ""
+  );
 
-  const [selectedProject, setSelectedProject] = useState(projects[0].id);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchTasks() {
-      setLoading(true);
-      const { data } = await supabase
-        .from("tasks")
-        .select("*")
-        .eq("project_id", selectedProject)
-        .order("created_at", { ascending: false });
-
-      setTasks(data || []);
-      setLoading(false);
-    }
-
-    fetchTasks();
-  }, [selectedProject]);
+  const noProjects = projects.length === 0;
 
   return (
-    <div className="p-8 space-y-6">
-      <ProjectSelect
-        projects={projects}
-        selected={selectedProject}
-        onChange={setSelectedProject}
-      />
+     <div className="pr-20 pt-20 space-y-6 justify">
+        <h1 className="text-3xl font-extrabold text-blue-400">
+          Projects
+        </h1>
+        {/*Task Headers*/}
+        <div className="flex items-center gap-2">
+          <ProjectSelect 
+            projects={projects}
+            selected={selectedProject}
+            onChange={setSelectedProject}
+          />
 
-      {loading ? (
-        <p className="text-slate-400">Loading tasks…</p>
-      ) : tasks.length === 0 ? (
-        <div className="border rounded-lg p-10 text-center text-slate-400">
-          No tasks found for this project.
+          <div className="flex gap-2">
+            <Button className="px-4 py-2 bg-slate-800 text-white rounded-md">
+              Create Project  
+            </Button>
+
+            <Button className="px-4 py-2 bg-indigo-600 text-white rounded-md">
+              Create Task
+            </Button> 
+          </div>
         </div>
-      ) : (
-        <TasksTable tasks={tasks} />
-      )}
+
+        <div className="mt-4">
+          {noProjects ? (
+            <div className="border rounded-lg p-10 text-center text-slate-400">
+              No projects. Create a project to begin managing tasks.
+            </div>
+        ) : (
+          <Suspense
+            key={selectedProject}
+            fallback={<p className="text-slate-400">Loading tasks…</p>}>
+              <TaskLoader projectId={selectedProject} />
+          </Suspense>
+        )}
+      </div>     
     </div>
   );
 }

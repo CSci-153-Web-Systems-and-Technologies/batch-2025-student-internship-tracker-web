@@ -5,7 +5,7 @@ import { ProjectSelectorProps } from "@/types";
 export default function ProjectSelect({ projects, selected, onChange }:ProjectSelectorProps) {
   return (
     <select
-      className="bg-slate-900 border border-slate-700 text-white rounded-md p-2"
+      className="bg-slate-900 border border-slate-700 text-white rounded-md p-2 w-64"
       value={selected ?? ""}
       onChange={(e) => onChange(e.target.value)}
     >
