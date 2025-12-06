@@ -75,6 +75,20 @@ export interface ProjectSelectorProps{
   onChange: (value:string) => void;
 }
 
+export interface CreateTaskFormProps {
+  org_id: string;
+  user_id: string;
+  projects: Project[];
+  onClose: () => void;
+}
+
+export interface CreateProjectFormProps {
+  org_id: string;
+  user_id: string;
+  onClose: () => void;
+}
+
+
 //Payload
 export type CreateProjectDTO = {
   org_id: string;
