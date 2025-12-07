@@ -5,13 +5,13 @@ import { revalidatePath } from "next/cache";
 import { CreateProjectDTO, CreateTaskDTO } from "@/types";
 
 export async function createProject(payload: CreateProjectDTO) {
-    console.log("Creating project with payload:", payload); // Add logging
+    console.log("Creating project with payload:", payload);
     
     const { org_id, name, description, user_id } = payload;
 
     const supabase = await createClient();
 
-    console.log("org_id value:", org_id); // Check the org_id value
+    console.log("org_id value:", org_id);
     
     const { data, error } = await supabase
       .from("projects")
@@ -70,4 +70,31 @@ export async function createTask(payload: CreateTaskDTO) {
 
   revalidatePath(`/dashboard/${org_id}/projects`);
   return data;
+}
+
+export async function getTasksByProject(projectId: string) {
+    const supabase = await createClient();
+    
+    const { data: tasks, error } = await supabase
+        .from("task")
+        .select("*")
+        .eq("project_id", projectId)
+        .order("created_at", { ascending: false });
+        
+    if (error) throw error;
+    return tasks;
+}
+
+export async function getMenteeList(org_id:string){
+  const supabase = await createClient();
+
+  const {data: mentees, error} = await supabase
+    .from("organization_members")
+    .select("*")
+    .eq("role", "student")
+    .eq("org_id", org_id);
+
+  if (error) throw error;
+  return mentees; 
+
 }
