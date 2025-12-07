@@ -27,7 +27,7 @@ export function CreateProjectForm({ org_id, user_id, onClose }: CreateProjectFor
       setIsSubmitting(false);
       return;
     }
-
+    
     try {
       const payload: CreateProjectDTO = {
         org_id: org_id,
@@ -35,16 +35,12 @@ export function CreateProjectForm({ org_id, user_id, onClose }: CreateProjectFor
         description: description.trim(),
         user_id: user_id,
       };
-
       const result = await createProject(payload);
-      
-      // Close the modal first
       onClose();
-      
-      // Then refresh after a short delay to avoid React error
+
       setTimeout(() => {
         router.refresh();
-      }, 0); // 0ms delay is enough to move to next event loop
+      }, 0)
       
     } catch (error) {
       console.error("Failed to create project:", error);

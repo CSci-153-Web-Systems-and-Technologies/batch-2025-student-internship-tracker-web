@@ -34,7 +34,6 @@ export async function createProject(payload: CreateProjectDTO) {
     revalidatePath(`/dashboard/${org_id}/projects`);
     return data;
 }
-
 export async function createTask(payload: CreateTaskDTO) {
   const {
     org_id,
@@ -46,23 +45,27 @@ export async function createTask(payload: CreateTaskDTO) {
     assigned_to,
     created_by,
     due_date,
-    project_id} = payload;
+    project_id
+  } = payload;
+
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("tasks")
-    .insert({
-      org_id,
-      title,
-      description,
-      type,
-      priority,
-      status,
-      assigned_to,
-      created_by,
-      due_date,
-      project_id,
-    })
+    .from("task")
+    .insert([
+      {
+        org_id,
+        title,
+        description,
+        type,
+        priority,
+        status,
+        assigned_to, 
+        created_by,
+        due_date,
+        project_id,
+      }
+    ])
     .select()
     .single();
 
@@ -70,6 +73,23 @@ export async function createTask(payload: CreateTaskDTO) {
 
   revalidatePath(`/dashboard/${org_id}/projects`);
   return data;
+}
+
+
+export async function getProjectsByOrgId(org_id: string) {
+  const supabase = await createClient();
+
+  const { data: projects, error } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("org_id", org_id);
+
+  if (error) {
+    console.error("Error fetching projects:", error);
+    throw error;
+  }
+
+  return projects || [];
 }
 
 export async function getTasksByProject(projectId: string) {
@@ -85,16 +105,20 @@ export async function getTasksByProject(projectId: string) {
     return tasks;
 }
 
-export async function getMenteeList(org_id:string){
+export async function getMenteeList(org_id: string) {
   const supabase = await createClient();
 
-  const {data: mentees, error} = await supabase
+  const { data: mentees, error } = await supabase
     .from("organization_members")
     .select("*")
     .eq("role", "student")
     .eq("org_id", org_id);
 
-  if (error) throw error;
-  return mentees; 
-
+  if (error) {
+    console.error("Error fetching mentees:", error);
+    return [];
+  }
+  
+  return mentees || [];
 }
+

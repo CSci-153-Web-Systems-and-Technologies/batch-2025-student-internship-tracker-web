@@ -37,6 +37,15 @@ export type MembershipWithOrg ={
   };
 };
 
+export type OrganizationMember = {
+  id: string;
+  name: string;
+  org_id: string;
+  user_id: string;
+  role: string;
+  joined_at: string;
+}
+
 
 
 export type Project = {
@@ -57,10 +66,9 @@ export type Task = {
   type: TaskType;
   priority: TaskPriority;
   status: TaskStatus;
-  assigned_to: string;
+  assigned_to: string[];
   created_by: string;
   due_date: string;
-  user_id: string;
 };
 
  export interface DataTableProps<TData, TValue>{
@@ -79,6 +87,7 @@ export interface CreateTaskFormProps {
   org_id: string;
   user_id: string;
   projects: Project[];
+  students: OrganizationMember[];
   onClose: () => void;
 }
 
@@ -105,8 +114,7 @@ export type CreateTaskDTO = {
   type: TaskType;
   priority: TaskPriority;
   status: TaskStatus;
-  assigned_to: string;
+  assigned_to:string[];
   created_by: string;
   due_date: string;
-  user_id: string;
 };

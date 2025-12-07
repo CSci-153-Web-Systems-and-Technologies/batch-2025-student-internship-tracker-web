@@ -3,11 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Suspense, useState, useEffect } from "react";
 import ProjectSelect from "./ProjectSelect";
 import TaskLoader from "./TaskLoader";
-import { Project } from "@/types";
+import { Project, OrganizationMember} from "@/types";
 import { CreateProjectForm } from "./CreateProjectForm";
 import { CreateTaskForm } from "./CreateTaskForm";
 
-export default function TasksView({ projects, org_id,user_id }: { projects: Project[],org_id: string,user_id: string }) {
+export default function TasksView({ projects, org_id,user_id, mentees}: { projects: Project[],org_id: string,user_id: string, mentees: OrganizationMember[]}) {
   const [selectedProject, setSelectedProject] = useState("");
   const [showCreateProject, setShowCreateProject] = useState(false);
   const [showCreateTask, setShowCreateTask] = useState(false);
@@ -85,6 +85,7 @@ export default function TasksView({ projects, org_id,user_id }: { projects: Proj
           org_id={org_id}
           user_id={user_id}
           projects={projects}
+          students={mentees}
           onClose={handleCloseCreateTask}
         />
       )}
