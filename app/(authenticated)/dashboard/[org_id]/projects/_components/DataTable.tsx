@@ -17,11 +17,16 @@ import {
 } from "@/components/ui/table"
 
 import type { DataTableProps } from "@/types"
+import { useRouter,useParams } from "next/navigation"
 
 export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
+
+  const router = useRouter();
+  const params = useParams();
+  const orgId = params.org_id as string;
 
   const table = useReactTable<TData>({
     data,
@@ -29,7 +34,7 @@ export function DataTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
   })
 
-  return (
+    return (
     <div>
       <Table className="bg-slate-900/30 border border-slate-800/50 backdrop-blur-sm rounded-xl overflow-hidden">
         <TableHeader>
@@ -48,15 +53,27 @@ export function DataTable<TData, TValue>({
 
         <TableBody>
           {table.getRowModel().rows.length ? (
-            table.getRowModel().rows.map(row => (
-              <TableRow key={row.id}>
-                {row.getVisibleCells().map(cell => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
+            table.getRowModel().rows.map(row => {
+              const taskId = (row.original as any).id;
+              
+              return (
+                <TableRow 
+                  key={row.id}
+                  className="hover:bg-slate-800/50 cursor-pointer transition-colors"
+                  onClick={() => {
+                    if (taskId) {
+                      router.push(`/dashboard/${orgId}/projects/task/${taskId}/`);
+                    }
+                  }}
+                >
+                  {row.getVisibleCells().map(cell => (
+                    <TableCell key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              )
+            })
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="h-24 text-center">

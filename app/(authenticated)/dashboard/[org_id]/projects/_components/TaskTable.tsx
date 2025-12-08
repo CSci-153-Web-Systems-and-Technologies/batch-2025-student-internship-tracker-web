@@ -1,7 +1,7 @@
 "use client";
 
-import { DataTable } from "@/components/DataTable";
-import { columns } from "@/components/column";
+import { DataTable } from "@/app/(authenticated)/dashboard/[org_id]/projects/_components/DataTable";
+import { columns } from "@/app/(authenticated)/dashboard/[org_id]/projects/_components/column";
 import { Task } from "@/types";
 
 export default function TasksTable({ tasks }: { tasks: Task[] }) {
