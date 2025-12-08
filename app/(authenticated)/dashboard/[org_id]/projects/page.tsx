@@ -11,12 +11,12 @@ export default async function TasksPage({ params }: { params: Promise<{ org_id: 
   console.log("TasksPage org_id:", org_id);
   
   const supabase = await createClient();
-  const { user } = await getUserProfile();
+  const { user,isMentor } = await getUserProfile();
   const mentees = await getMenteeList(org_id);
 
   if (!user) {
     return (
-      <div className="p-20">
+      <div className="p-20 ">
         <h1 className="text-2xl text-red-500">Authentication required</h1>
         <p className="text-slate-400">Please log in to view projects.</p>
       </div>
@@ -28,15 +28,12 @@ export default async function TasksPage({ params }: { params: Promise<{ org_id: 
     .select("*")
     .eq("org_id", org_id);
 
-  console.log("Loaded USER:", user);
-  console.log("Loaded PROJECTS:", projects);
-  console.log("Loaded MENTEES:", mentees);
-
   return (
     <TasksView 
       projects={projects ?? []} 
       org_id={org_id}
       user_id={user.id}
+      isMentor={isMentor}
       mentees = {mentees}
     />
   );

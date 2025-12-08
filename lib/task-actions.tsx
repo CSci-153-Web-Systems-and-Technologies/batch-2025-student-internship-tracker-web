@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { CreateProjectDTO, CreateTaskDTO } from "@/types";
+import { User } from "@supabase/supabase-js";
 
 export async function createProject(payload: CreateProjectDTO) {
     console.log("Creating project with payload:", payload);
@@ -49,6 +50,8 @@ export async function createTask(payload: CreateTaskDTO) {
   } = payload;
 
   const supabase = await createClient();
+  console.log('Inserting task with assigned_to:', assigned_to);
+
 
   const { data, error } = await supabase
     .from("task")
@@ -60,7 +63,7 @@ export async function createTask(payload: CreateTaskDTO) {
         type,
         priority,
         status,
-        assigned_to, 
+        assigned_to,
         created_by,
         due_date,
         project_id,
@@ -69,7 +72,22 @@ export async function createTask(payload: CreateTaskDTO) {
     .select()
     .single();
 
-  if (error) throw error;
+   if (error) {
+    console.error('Supabase error:', error);
+    console.error('Full payload:', {
+      org_id,
+      title,
+      description,
+      type,
+      priority,
+      status,
+      assigned_to,
+      created_by,
+      due_date,
+      project_id,
+    });
+    throw error;
+  }
 
   revalidatePath(`/dashboard/${org_id}/projects`);
   return data;
@@ -92,18 +110,44 @@ export async function getProjectsByOrgId(org_id: string) {
   return projects || [];
 }
 
-export async function getTasksByProject(projectId: string) {
-    const supabase = await createClient();
-    
-    const { data: tasks, error } = await supabase
-        .from("task")
-        .select("*")
-        .eq("project_id", projectId)
-        .order("created_at", { ascending: false });
-        
-    if (error) throw error;
-    return tasks;
+export async function getTasksByProject(
+  projectId: string,
+  user: User | null,
+  isMentor: boolean,
+  org_id: string
+) {
+  const supabase = await createClient();
+
+  const { data: member, error: memberError } = await supabase
+    .from("organization_members")
+    .select("id")
+    .eq("user_id", user?.id)
+    .eq("org_id", org_id)
+    .single();
+
+  if (memberError) throw memberError;
+  
+  let query = supabase
+    .from("task")
+    .select("*")
+    .eq("project_id", projectId)
+    .order("created_at", { ascending: false });
+
+  if (!isMentor && user) {
+    if (!member?.id) return [];
+    query = query.contains("assigned_to", [member.id]);
+  }
+
+  const { data: tasks, error } = await query;
+
+  if (error) {
+    console.error("Supabase query error:", error);
+    throw error;
+  }
+
+   return tasks;
 }
+
 
 export async function getMenteeList(org_id: string) {
   const supabase = await createClient();

@@ -7,12 +7,13 @@ import { Project, OrganizationMember} from "@/types";
 import { CreateProjectForm } from "./CreateProjectForm";
 import { CreateTaskForm } from "./CreateTaskForm";
 
-export default function TasksView({ projects, org_id,user_id, mentees}: { projects: Project[],org_id: string,user_id: string, mentees: OrganizationMember[]}) {
+export default function TasksView({ projects, org_id,user_id,isMentor, mentees}: { projects: Project[],org_id: string,user_id: string,isMentor:boolean, mentees: OrganizationMember[]}) {
   const [selectedProject, setSelectedProject] = useState("");
   const [showCreateProject, setShowCreateProject] = useState(false);
   const [showCreateTask, setShowCreateTask] = useState(false);
   
   const noProjects = projects.length === 0;
+  const canCreate = isMentor;
 
   useEffect(() => {
     if (projects.length > 0 && selectedProject === "") {
@@ -34,36 +35,40 @@ export default function TasksView({ projects, org_id,user_id, mentees}: { projec
           selected={selectedProject}
           onChange={setSelectedProject}
         />
-        <div className="flex gap-2">
-          <Button 
-            className="px-4 py-2 bg-slate-800 text-white rounded-md" 
-            onClick={() => setShowCreateProject(true)}
-            disabled={!user_id}
-          >
-            Create Project  
-          </Button>
+        {canCreate && (
+          <div className="flex gap-2">
+            <Button 
+              className="px-4 py-2 bg-slate-800 text-white rounded-md" 
+              onClick={() => setShowCreateProject(true)}
+              disabled={!user_id}
+            >
+              Create Project  
+            </Button>
 
-          <Button 
-            className="px-4 py-2 bg-indigo-600 text-white rounded-md" 
-            onClick={() => setShowCreateTask(true)}
-            disabled={noProjects || !user_id}
-          >
-            Create Task
-          </Button> 
-        </div>
+            <Button 
+              className="px-4 py-2 bg-indigo-600 text-white rounded-md" 
+              onClick={() => setShowCreateTask(true)}
+              disabled={noProjects || !user_id}
+            >
+              Create Task
+            </Button> 
+          </div>
+        )}
       </div>
 
       <div className="mt-4">
         {noProjects ? (
           <div className="border rounded-lg p-10 text-center text-slate-400">
-            No projects. Create a project to begin managing tasks.
+            {canCreate 
+              ? "No projects. Create a project to begin managing tasks." 
+              : "No projects available."}
           </div>
         ) : selectedProject ? (
           <Suspense
             key={selectedProject}
             fallback={<p className="text-slate-400">Loading tasks…</p>}
           >
-            <TaskLoader projectId={selectedProject} />
+            <TaskLoader projectId={selectedProject} orgId={org_id}/>
           </Suspense>
         ) : (
           <div className="border rounded-lg p-10 text-center text-slate-400">
@@ -72,7 +77,7 @@ export default function TasksView({ projects, org_id,user_id, mentees}: { projec
         )}
       </div>
 
-      {showCreateProject && user_id && (
+      {showCreateProject && user_id && canCreate && (
         <CreateProjectForm 
           org_id={org_id}
           user_id={user_id}
@@ -80,7 +85,7 @@ export default function TasksView({ projects, org_id,user_id, mentees}: { projec
         />
       )}
 
-      {showCreateTask && user_id && (
+      {showCreateTask && user_id && canCreate && (
         <CreateTaskForm
           org_id={org_id}
           user_id={user_id}

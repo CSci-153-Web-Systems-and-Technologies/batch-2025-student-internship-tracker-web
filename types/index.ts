@@ -106,15 +106,15 @@ export type CreateProjectDTO = {
   user_id: string;
 };
 
-export type CreateTaskDTO = {
-  org_id: string;
-  project_id: string;
-  title: string;
-  description: string;
-  type: TaskType;
-  priority: TaskPriority;
-  status: TaskStatus;
-  assigned_to:string[];
-  created_by: string;
-  due_date: string;
-};
+  export type CreateTaskDTO = {
+    org_id: string;
+    project_id: string;
+    title: string;
+    description: string;
+    type: TaskType;
+    priority: TaskPriority;
+    status: TaskStatus;
+    assigned_to:string[];
+    created_by: string;
+    due_date: string;
+  };

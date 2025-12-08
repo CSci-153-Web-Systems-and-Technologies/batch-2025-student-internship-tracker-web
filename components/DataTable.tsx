@@ -30,13 +30,13 @@ export function DataTable<TData, TValue>({
   })
 
   return (
-    <div className="overflow-hidden rounded-md border">
-      <Table>
+    <div>
+      <Table className="bg-slate-900/30 border border-slate-800/50 backdrop-blur-sm rounded-xl overflow-hidden">
         <TableHeader>
           {table.getHeaderGroups().map(headerGroup => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map(header => (
-                <TableHead key={header.id}>
+                <TableHead key={header.id} className="bg-cyan-500/20 border-b border-cyan-500/30 text-white">
                   {header.isPlaceholder ? null : 
                     flexRender(header.column.columnDef.header, header.getContext())
                   }
