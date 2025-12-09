@@ -2,8 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import TasksView from "./_components/TaskView";
 import { getUserProfile } from "@/lib/org-actions";
 import { getMenteeList } from "@/lib/task-actions";
-import { Suspense } from "react";
-export default async function TasksPage({ params }: { params: Promise<{ org_id: string }>}) {
+
+export default async function ProjectPage({ params }: { params: Promise<{ org_id: string }>}) {
 
   const resolvedParams = await params;
   const org_id = resolvedParams.org_id;

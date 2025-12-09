@@ -2,8 +2,9 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { CreateProjectDTO, CreateTaskDTO } from "@/types";
+import { CreateProjectDTO, CreateTaskDTO,UploadOptions, UploadResponse } from "@/types";
 import { User } from "@supabase/supabase-js";
+import { metadata } from '../app/layout';
 
 export async function createProject(payload: CreateProjectDTO) {
     console.log("Creating project with payload:", payload);
@@ -110,6 +111,24 @@ export async function getProjectsByOrgId(org_id: string) {
   return projects || [];
 }
 
+export async function getMemberID(user_id: string, org_id: string) {
+  const supabase = await createClient();
+
+  const { data: member, error } = await supabase
+    .from("organization_members")
+    .select("id")
+    .eq("user_id", user_id)
+    .eq("org_id", org_id)
+    .single(); 
+
+  if (error) {
+    console.error("Error fetching member ID:", error);
+    throw error;
+  }
+
+  return member?.id ?? null;
+}
+
 export async function getTasksByProject(
   projectId: string,
   user: User | null,
@@ -118,14 +137,16 @@ export async function getTasksByProject(
 ) {
   const supabase = await createClient();
 
-  const { data: member, error: memberError } = await supabase
-    .from("organization_members")
-    .select("id")
-    .eq("user_id", user?.id)
-    .eq("org_id", org_id)
-    .single();
+  let memberId: string | null = null;
 
-  if (memberError) throw memberError;
+  if (user) {
+    try {
+      memberId = await getMemberID(user.id, org_id);
+    } catch (err) {
+      console.error("Failed to get member ID:", err);
+      throw err;
+    }
+  }
   
   let query = supabase
     .from("task")
@@ -133,9 +154,13 @@ export async function getTasksByProject(
     .eq("project_id", projectId)
     .order("created_at", { ascending: false });
 
-  if (!isMentor && user) {
-    if (!member?.id) return [];
-    query = query.contains("assigned_to", [member.id]);
+  if (!isMentor && memberId) {
+    query = query.contains("assigned_to", [memberId]);
+  }
+
+  //If user is not mentor and not a member
+  if (!isMentor && !memberId) {
+    return [];
   }
 
   const { data: tasks, error } = await query;
@@ -146,6 +171,40 @@ export async function getTasksByProject(
   }
 
    return tasks;
+}
+
+export async function getProjectsById(project_id:string){
+  const supabase = await createClient();
+
+  const{data:project, error} = await supabase
+    .from("projects")
+    .select("*")
+    .eq("id",project_id)
+    .single()
+
+  if(error){
+    console.error("Error fetching task details:", error);
+    return null;
+  }
+
+  return project;
+}
+
+export async function getTaskByID(task_id:string){
+  const supabase = await createClient();
+
+  const {data:task, error} = await supabase
+    .from("task")
+    .select("*")
+    .eq("id", task_id)
+    .single()
+
+  if(error){
+    console.error("Error fetching task details:", error);
+    return null;
+  }
+
+  return task;
 }
 
 
@@ -166,3 +225,122 @@ export async function getMenteeList(org_id: string) {
   return mentees || [];
 }
 
+export async function uploadStudentSubmission(
+  { file, bucketId = "student_submissions", folderPath = "", metadata = {} }: UploadOptions
+): Promise<UploadResponse> {
+  const supabase = await createClient();
+
+  try {
+    if (!file) {
+      return { success: false, error: "No file provided." };
+    }
+
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${crypto.randomUUID()}.${fileExt}`;
+
+    const filePath =
+      folderPath && folderPath.length > 0
+        ? `${folderPath}/${fileName}`
+        : fileName;
+
+
+    const { error: uploadError } = await supabase.storage
+      .from(bucketId)
+      .upload(filePath, file, {
+        upsert: false,
+        metadata,
+      });
+
+    if (uploadError) {
+      console.error("Upload error:", uploadError);
+      return { success: false, error: uploadError.message };
+    }
+
+    if (metadata.task_id) {
+      const { data: task, error: fetchError } = await supabase
+        .from("task")
+        .select("file_submissions")
+        .eq("id", metadata.task_id)
+        .single();
+
+      if (fetchError) {
+        console.error("Error fetching task:", fetchError);
+        return { success: false, error: fetchError.message };
+      }
+
+      const currentFiles = task?.file_submissions || [];
+
+
+      const newFiles = [...currentFiles, filePath];
+
+
+      const { error: updateError } = await supabase
+        .from("task")
+        .update({ file_submissions: newFiles })
+        .eq("id", metadata.task_id);
+
+      if (updateError) {
+        console.error("Error updating task:", updateError);
+        return { success: false, error: updateError.message };
+      }
+    }
+
+
+    const { data: urlData } = supabase.storage
+      .from(bucketId)
+      .getPublicUrl(filePath);
+
+    return {
+      success: true,
+      data: {
+        path: filePath,
+        publicUrl: urlData.publicUrl,
+      },
+    };
+  } catch (err: any) {
+    console.error("Unexpected upload error:", err);
+    return { success: false, error: err.message || "Unexpected error" };
+  }
+}
+
+export async function removeStudentSubmission(taskId: string) {
+  const supabase = await createClient();
+
+
+  const { data: task, error: taskError } = await supabase
+    .from("tasks")
+    .select("file_submissions")
+    .eq("id", taskId)
+    .single();
+
+  if (taskError) {
+    throw new Error("Task not found: " + taskError.message);
+  }
+
+  const filePath = task?.file_submissions?.[0];
+
+  if (!filePath) {
+    return { success: false, message: "No submission file found." };
+  }
+
+  const { error: storageError } = await supabase.storage
+    .from("student_submissions")
+    .remove([filePath]);
+
+  if (storageError) {
+    throw new Error("Failed to delete file: " + storageError.message);
+  }
+
+  const { error: updateError } = await supabase
+    .from("tasks")
+    .update({
+      file_submissions: [], 
+    })
+    .eq("id", taskId);
+
+  if (updateError) {
+    throw new Error("Failed to update task: " + updateError.message);
+  }
+
+  return { success: true };
+}

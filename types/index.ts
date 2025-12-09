@@ -69,6 +69,7 @@ export type Task = {
   assigned_to: string[];
   created_by: string;
   due_date: string;
+  file_submissions: string[];
 };
 
  export interface DataTableProps<TData, TValue>{
@@ -118,3 +119,16 @@ export type CreateProjectDTO = {
     created_by: string;
     due_date: string;
   };
+
+export interface UploadOptions {
+  file: File;
+  bucketId?: string;
+  folderPath?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface UploadResponse {
+  success: boolean;
+  data?: any;
+  error?: string;
+}
