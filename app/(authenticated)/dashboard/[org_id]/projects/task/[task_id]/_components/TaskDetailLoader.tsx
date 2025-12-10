@@ -28,30 +28,38 @@ export default function TaskDetailClient({ task, project_name}: TaskDetailClient
   const router = useRouter();
   
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files?.length) return;
+  const files = e.target.files;
+  if (!files?.length) return;
 
-    setIsUploading(true);
-    const file = files[0];
+  setIsUploading(true);
+  const file = files[0];
 
-    try {
-      const res = await uploadStudentSubmission({
-        file,
-        metadata: { task_id: task.id },
-        folderPath: `${task.id}`,
-      });
+  console.log("[Upload] Selected file:", file.name, file.size, file.type);
 
-      if (res.success && res.data) {
-        setSubmissions((prev) => [...prev, res.data.path]);
-        router.refresh?.();
-      }
-    } catch (error) {
-      console.error("Upload failed:", error);
-      alert("Failed to upload file");
-    } finally {
-      setIsUploading(false);
-      e.target.value = '';
+  try {
+    const res = await uploadStudentSubmission({
+      file,
+      task_id: task.id,
+      folderPath: `${task.id}`,
+    });
+
+    console.log("[Upload] Response from uploadStudentSubmission:", res);
+
+    if (res.success && res.data) {
+      console.log("[Upload] File uploaded successfully, path:", res.data.path);
+      setSubmissions((prev) => [...prev, res.data?.path || ""]);
+      router.refresh?.();
+    } else {
+      console.warn("[Upload] Upload failed:", res.error);
+      alert(res.error || "Upload failed");
     }
+  } catch (error) {
+    console.error("[Upload] Unexpected error:", error);
+    alert("Failed to upload file");
+  } finally {
+    setIsUploading(false);
+    e.target.value = '';
+  }
   };
 
 
@@ -83,7 +91,6 @@ export default function TaskDetailClient({ task, project_name}: TaskDetailClient
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 flex">
       <main className="flex-1 p-10 max-w-5xl mx-auto">
         
-        {/* Header */}
         <Button
           onClick={() => router.back()}
           variant="ghost"

@@ -50,7 +50,7 @@ export default function TaskLoader({ projectId, orgId }: TaskLoaderProps) {
         console.log(error)
         return (
             <div className="border rounded-lg p-10 text-center text-red-400">
-                {error}
+                Error while Loading Tasks. Check again Later.
             </div>
         );
     }

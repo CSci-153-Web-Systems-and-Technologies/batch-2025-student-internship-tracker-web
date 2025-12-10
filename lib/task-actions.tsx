@@ -158,7 +158,6 @@ export async function getTasksByProject(
     query = query.contains("assigned_to", [memberId]);
   }
 
-  //If user is not mentor and not a member
   if (!isMentor && !memberId) {
     return [];
   }
@@ -225,24 +224,65 @@ export async function getMenteeList(org_id: string) {
   return mentees || [];
 }
 
-export async function uploadStudentSubmission(
-  { file, bucketId = "student_submissions", folderPath = "", metadata = {} }: UploadOptions
-): Promise<UploadResponse> {
+export async function uploadStudentSubmission({
+  file,
+  bucketId = "student_submissions",
+  folderPath = "",
+  task_id,
+}: {
+  file: File;
+  bucketId?: string;
+  folderPath?: string;
+  task_id: string;
+}): Promise<{ success: boolean; data?: { path: string; publicUrl: string }; error?: string }> {
   const supabase = await createClient();
 
   try {
-    if (!file) {
-      return { success: false, error: "No file provided." };
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.user?.id) {
+      return { success: false, error: "User not authenticated" };
     }
+
+    const userId = session.user.id;
+
+    const { data: taskData, error: taskError } = await supabase
+      .from("task")
+      .select("id, assigned_to, file_submissions")
+      .eq("id", task_id)
+      .single();
+
+    if (taskError || !taskData) {
+      return { success: false, error: taskError?.message || "Task not found" };
+    }
+
+    const { data: orgMember } = await supabase
+      .from("organization_members")
+      .select("id")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    const isAssigned = taskData.assigned_to?.includes(orgMember?.id);
+
+    if (!isAssigned) {
+      return {
+        success: false,
+        error: "You don't have permission to upload to this task",
+      };
+    }
+
+    if (!file) return { success: false, error: "No file provided" };
 
     const fileExt = file.name.split(".").pop();
     const fileName = `${crypto.randomUUID()}.${fileExt}`;
-
     const filePath =
       folderPath && folderPath.length > 0
         ? `${folderPath}/${fileName}`
         : fileName;
 
+    const metadata = { task_id };
 
     const { error: uploadError } = await supabase.storage
       .from(bucketId)
@@ -252,39 +292,21 @@ export async function uploadStudentSubmission(
       });
 
     if (uploadError) {
-      console.error("Upload error:", uploadError);
       return { success: false, error: uploadError.message };
     }
 
-    if (metadata.task_id) {
-      const { data: task, error: fetchError } = await supabase
-        .from("task")
-        .select("file_submissions")
-        .eq("id", metadata.task_id)
-        .single();
 
-      if (fetchError) {
-        console.error("Error fetching task:", fetchError);
-        return { success: false, error: fetchError.message };
-      }
+    const currentFiles: string[] = taskData.file_submissions || [];
+    const newFiles = [...currentFiles, filePath];
 
-      const currentFiles = task?.file_submissions || [];
+    const { error: updateError } = await supabase
+      .from("task")
+      .update({ file_submissions: newFiles })
+      .eq("id", task_id);
 
-
-      const newFiles = [...currentFiles, filePath];
-
-
-      const { error: updateError } = await supabase
-        .from("task")
-        .update({ file_submissions: newFiles })
-        .eq("id", metadata.task_id);
-
-      if (updateError) {
-        console.error("Error updating task:", updateError);
-        return { success: false, error: updateError.message };
-      }
+    if (updateError) {
+      return { success: false, error: updateError.message };
     }
-
 
     const { data: urlData } = supabase.storage
       .from(bucketId)
@@ -292,55 +314,70 @@ export async function uploadStudentSubmission(
 
     return {
       success: true,
-      data: {
-        path: filePath,
-        publicUrl: urlData.publicUrl,
-      },
+      data: { path: filePath, publicUrl: urlData.publicUrl },
     };
   } catch (err: any) {
-    console.error("Unexpected upload error:", err);
     return { success: false, error: err.message || "Unexpected error" };
   }
 }
 
 export async function removeStudentSubmission(taskId: string) {
   const supabase = await createClient();
-
-
+    
   const { data: task, error: taskError } = await supabase
-    .from("tasks")
+    .from("task")
     .select("file_submissions")
     .eq("id", taskId)
     .single();
 
   if (taskError) {
-    throw new Error("Task not found: " + taskError.message);
+    console.error("[Delete] Task fetch error:", taskError);
+    return {
+      success: false,
+      message: "Task not found.",
+      error: taskError.message,
+    };
   }
 
   const filePath = task?.file_submissions?.[0];
 
   if (!filePath) {
-    return { success: false, message: "No submission file found." };
+    return {
+      success: false,
+      message: "No submission file found for this task.",
+    };
   }
+
 
   const { error: storageError } = await supabase.storage
     .from("student_submissions")
     .remove([filePath]);
 
   if (storageError) {
-    throw new Error("Failed to delete file: " + storageError.message);
+    console.error("[Delete] Storage deletion error:", storageError);
+    return {
+      success: false,
+      message: "Failed to delete file from storage",
+      error: storageError.message,
+    };
   }
 
   const { error: updateError } = await supabase
-    .from("tasks")
-    .update({
-      file_submissions: [], 
-    })
+    .from("task")
+    .update({ file_submissions: [] })
     .eq("id", taskId);
 
   if (updateError) {
-    throw new Error("Failed to update task: " + updateError.message);
+    console.error("[Delete] Task update error:", updateError);
+    return {
+      success: false,
+      message: "File deleted but failed to update task.",
+      error: updateError.message,
+    };
   }
 
-  return { success: true };
+  return {
+    success: true,
+    message: "Submission successfully removed.",
+  };
 }
