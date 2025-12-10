@@ -1,4 +1,4 @@
-import { getUserProfile } from "@/lib/user-actions";
+import { getUserProfile } from "@/lib/org-actions";
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import OrganizationView from "./_components/OrganizationView";

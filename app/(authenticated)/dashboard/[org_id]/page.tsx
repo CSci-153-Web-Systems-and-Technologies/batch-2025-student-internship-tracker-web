@@ -1,4 +1,4 @@
-import { getUserProfile } from "@/lib/user-actions"
+import { getUserProfile } from "@/lib/org-actions"
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import Loading from "@/components/ui/loading"
@@ -12,10 +12,8 @@ export default async function UserDashboard(){
     }
 
     return(
-        <Suspense fallback={<Loading/>}>
-                <main>
-                    {isMentor ? <MentorDashboard/>:<StudentDashboard/>}
-                </main>
-        </Suspense>
+        <main>
+            {isMentor ? <MentorDashboard/>:<StudentDashboard/>}
+        </main>
     )
 }

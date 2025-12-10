@@ -50,7 +50,7 @@ export function AppSidebar() {
             {/* Tasks */}
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
-                <Link href = {`/dashboard/${org_id}/tasks`}>
+                <Link href = {`/dashboard/${org_id}/projects`}>
                   <ListTodo className="h-4 w-4" />
                   <span className="
                       ml-2 

@@ -15,7 +15,7 @@ export async function getUserProfile() {
         .single();
 
     const isMentor = profile?.role === "mentor";
-
+    
     return { user, profile, isMentor };
 }
 
