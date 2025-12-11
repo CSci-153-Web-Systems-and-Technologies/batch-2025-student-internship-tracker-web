@@ -4,7 +4,70 @@ import { createClient } from "@/lib/supabase/server";
 import { getProjectsByOrgId, getTasksByProject, getMemberID } from "@/lib/task-actions"
 import { getUserProfile } from "@/lib/org-actions";
 import type { Project, Task } from "@/types";
+import { Notification } from '../types/index';
 
+
+export async function notifyUser({user_id,origin,type,title,message}: 
+  {user_id: string;origin: string;type: string;title: string; message: string;}) {
+  const supabase = await createClient();
+
+  const { error } = await supabase.from("notifications").insert({
+    user_id,
+    origin,
+    type,
+    title,
+    message,
+    is_read: false
+  });
+
+  if (error) {
+    console.error("Failed to notify user:");
+    throw error;
+  }
+}
+
+export async function getNotification(org_id: string) {
+  const supabase = await createClient();
+  const { user } = await getUserProfile();
+
+  if (!user) {
+    return { error: "User not authenticated", ok: false };
+  }
+
+  const member = await getMemberID(user.id, org_id);
+  if (!member) {
+    return { error: "Missing member", ok: false };
+  }
+
+  const { data, error } = await supabase
+    .from("notifications")
+    .select("*")
+    .eq("org_id", org_id)
+    .eq("user_id", member);
+
+  if (error) {
+    return { error: error.message, ok: false };
+  }
+
+  return { data, ok: true };
+}
+
+
+export async function markAsRead(notification: Notification) {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("notifications")
+    .update({ is_read: true })
+    .eq("id", notification.id);
+
+  if (error) {
+    console.error("Failed to mark notification as read:", error.message);
+    throw new Error(error.message);
+  }
+
+  return { success: true };
+}
 
 export async function getMentorDashboardData(org_id: string) {
   const { user, profile} = await getUserProfile();
@@ -166,3 +229,4 @@ export async function getStudentDashboardData(org_id: string) {
     },
   };
 }
+
