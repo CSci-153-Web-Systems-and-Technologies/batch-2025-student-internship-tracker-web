@@ -23,7 +23,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           {showNavbar && <NavBar />}
            <div className="pl-40 ">
               <Suspense fallback={
-                <div className="flex items-center justify-center w-full py-20">
+                <div className="flex items-center justify-center w-full py-20 pt-100">
                   <Spinner variant="circle-filled" size={32} />
                 </div>
               }>

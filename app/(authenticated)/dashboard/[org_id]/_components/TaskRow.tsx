@@ -4,11 +4,11 @@ import { Task } from "@/types";
 export default function TaskRow({ task }: { task: Task }) {
   const progressFromStatus = (status: string) => {
     switch (status) {
-      case "done":
+      case "completed":
         return 100;
-      case "verifying":
+      case "revise":
         return 75;
-      case "in_progress":
+      case "verifying":
         return 50;
       default:
         return 0;
