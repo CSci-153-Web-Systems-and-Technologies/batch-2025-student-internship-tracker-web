@@ -7,7 +7,7 @@ import type { Project, Task } from "@/types";
 
 
 export async function getMentorDashboardData(org_id: string) {
-  const { user} = await getUserProfile();
+  const { user, profile} = await getUserProfile();
 
   if (!user) {
     throw new Error("User not authenticated");
@@ -67,7 +67,7 @@ export async function getMentorDashboardData(org_id: string) {
     ok: true,
     data: {
       org_id: org_id,
-      user,
+      profile,
       metrics: {
         totalTasks,
         completedTasks,
@@ -85,7 +85,7 @@ export async function getMentorDashboardData(org_id: string) {
 }
 
 export async function getStudentDashboardData(org_id: string) {
-  const { user,isMentor } = await getUserProfile();
+  const { user,profile } = await getUserProfile();
 
   if (!user) {
     throw new Error("User not authenticated");
@@ -143,13 +143,13 @@ export async function getStudentDashboardData(org_id: string) {
       });
       return { ...p, completed, total: tasks.length, recent };
     })
-    .filter((pc) => pc.total > 0); // only projects where student has tasks
+    .filter((pc) => pc.total > 0);
 
   return {
     ok: true,
     data: {
       org_id: org_id,
-      user,
+      profile,
       memberId,
       metrics: {
         totalTasks,

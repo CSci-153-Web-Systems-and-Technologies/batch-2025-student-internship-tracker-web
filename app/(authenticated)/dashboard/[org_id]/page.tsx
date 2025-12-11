@@ -19,7 +19,7 @@ export default async function UserDashboard(
       {isMentor ? (
         <MentorDashboard org_id={org_id} />
       ) : (
-        <StudentDashboard/>
+        <StudentDashboard orgId={org_id}/>
       )}
     </main>
   );
