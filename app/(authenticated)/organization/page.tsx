@@ -13,12 +13,15 @@ export default async function OrganizationPage() {
       .select("org_id,organizations(*)")
       .eq("user_id", user?.id) as {data: MembershipWithOrg[] | null};
 
+    if(!memberships){
+      throw new Error("Error loading Members");
+    }
     const projects = memberships?.map((m) => m.organizations) || [];
     
     return(
        <main>
           <Suspense fallback ={<div>Loading...</div>}>
-             <OrganizationView projects={projects} isMentor={isMentor} />
+             <OrganizationView projects={projects} isMentor={isMentor}/>
           </Suspense>
        </main>
     )

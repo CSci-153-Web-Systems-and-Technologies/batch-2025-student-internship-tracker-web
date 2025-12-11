@@ -4,7 +4,6 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { CreateProjectDTO, CreateTaskDTO,UploadOptions, UploadResponse } from "@/types";
 import { User } from "@supabase/supabase-js";
-import { metadata } from '../app/layout';
 
 export async function createProject(payload: CreateProjectDTO) {
     console.log("Creating project with payload:", payload);
@@ -234,7 +233,7 @@ export async function uploadStudentSubmission({
   bucketId?: string;
   folderPath?: string;
   task_id: string;
-}): Promise<{ success: boolean; data?: { path: string; publicUrl: string }; error?: string }> {
+}) {
   const supabase = await createClient();
 
   try {
@@ -250,7 +249,7 @@ export async function uploadStudentSubmission({
 
     const { data: taskData, error: taskError } = await supabase
       .from("task")
-      .select("id, assigned_to, file_submissions")
+      .select("id, assigned_to, file_submissions, status")
       .eq("id", task_id)
       .single();
 
@@ -267,13 +266,11 @@ export async function uploadStudentSubmission({
     const isAssigned = taskData.assigned_to?.includes(orgMember?.id);
 
     if (!isAssigned) {
-      return {
-        success: false,
-        error: "You don't have permission to upload to this task",
-      };
+      return { success: false, error: "You are not assigned to this task" };
     }
 
     if (!file) return { success: false, error: "No file provided" };
+
 
     const fileExt = file.name.split(".").pop();
     const fileName = `${crypto.randomUUID()}.${fileExt}`;
@@ -282,31 +279,32 @@ export async function uploadStudentSubmission({
         ? `${folderPath}/${fileName}`
         : fileName;
 
-    const metadata = { task_id };
 
     const { error: uploadError } = await supabase.storage
       .from(bucketId)
       .upload(filePath, file, {
         upsert: false,
-        metadata,
+        metadata: { task_id },
       });
 
     if (uploadError) {
       return { success: false, error: uploadError.message };
     }
 
-
-    const currentFiles: string[] = taskData.file_submissions || [];
-    const newFiles = [...currentFiles, filePath];
+    const newFiles = [...(taskData.file_submissions || []), filePath];
 
     const { error: updateError } = await supabase
       .from("task")
-      .update({ file_submissions: newFiles })
+      .update({
+        file_submissions: newFiles,
+        status: "verifying",
+      })
       .eq("id", task_id);
 
     if (updateError) {
       return { success: false, error: updateError.message };
     }
+
 
     const { data: urlData } = supabase.storage
       .from(bucketId)
@@ -317,9 +315,10 @@ export async function uploadStudentSubmission({
       data: { path: filePath, publicUrl: urlData.publicUrl },
     };
   } catch (err: any) {
-    return { success: false, error: err.message || "Unexpected error" };
+    return { success: false, error: err.message };
   }
 }
+
 
 export async function removeStudentSubmission(taskId: string) {
   const supabase = await createClient();

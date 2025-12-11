@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 
-export default function OrganizationView({projects,isMentor,}: { projects: any[];isMentor: boolean;}) {
+export default function OrganizationView({projects,isMentor}: { projects: any[];isMentor: boolean;}) {
   const router = useRouter();
 
   return (
@@ -57,7 +57,6 @@ export default function OrganizationView({projects,isMentor,}: { projects: any[]
           </div>
         </div>
 
-        {/* Projects Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project, index) => (
             <Card

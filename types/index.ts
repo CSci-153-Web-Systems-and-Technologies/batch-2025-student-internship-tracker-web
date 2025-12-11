@@ -46,7 +46,11 @@ export type OrganizationMember = {
   joined_at: string;
 }
 
-
+export type Metric = {
+  label: string;
+  value: number | string;
+  sub?: string;
+};
 
 export type Project = {
   id: string;
@@ -68,6 +72,8 @@ export type Task = {
   status: TaskStatus;
   assigned_to: string[];
   created_by: string;
+  created_at: string;
+  updated_at: string;
   due_date: string;
   file_submissions: string[];
 };
