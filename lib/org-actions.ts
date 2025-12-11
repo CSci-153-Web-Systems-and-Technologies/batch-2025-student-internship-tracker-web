@@ -15,8 +15,8 @@ export async function getUserProfile() {
         .single();
 
     const isMentor = profile?.role === "mentor";
-
-    return { user, profile, isMentor };
+    
+    return { user, profile, isMentor};
 }
 
 export async function CreateOrganization(formData: FormData) {

@@ -30,18 +30,11 @@ export async function login(formData: FormData) {
   revalidatePath("/", "layout");
   redirect("/organization");
 
-  /*if (profile?.role === "mentor") {
-    redirect("/mentor/dashboard");
-  }
-  redirect("/student/dashboard");
-  */
 }
 
 export async function signup(formData: FormData) {
   const supabase = await createClient();
 
-  // type-casting here for convenience
-  // in practice, you should validate your inputs
   const firstName = formData.get("first-name") as string;
   const lastName = formData.get("last-name") as string;
   const role = formData.get("role") as string;

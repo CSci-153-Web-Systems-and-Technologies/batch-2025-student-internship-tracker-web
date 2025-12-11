@@ -1,4 +1,4 @@
-import { CreateOrganization } from "@/lib/user-actions";
+import { CreateOrganization } from "@/lib/org-actions";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
