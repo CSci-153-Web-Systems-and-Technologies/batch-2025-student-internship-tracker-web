@@ -43,7 +43,9 @@ export async function getNotification(org_id: string) {
     .from("notifications")
     .select("*")
     .eq("org_id", org_id)
-    .eq("user_id", member);
+    .eq("user_id", member)
+    .order("created_at",{ascending:false})
+    .limit(5);
 
   if (error) {
     return { error: error.message, ok: false };
