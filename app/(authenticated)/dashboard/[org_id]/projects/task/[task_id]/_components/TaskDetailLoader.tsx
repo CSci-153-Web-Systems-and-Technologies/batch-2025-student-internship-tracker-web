@@ -1,7 +1,7 @@
 "use client"
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { uploadStudentSubmission, removeStudentSubmission } from "@/lib/task-actions";
+import { uploadStudentSubmission, removeStudentSubmission,reviewSubmission } from "@/lib/task-actions";
 import { Task} from "@/types";
 import { useRouter } from "next/navigation";
 import {
@@ -20,11 +20,13 @@ import {
 interface TaskDetailClientProps {
   task: Task;
   project_name: string;
+  isMentor: boolean;
 }
 
-export default function TaskDetailClient({ task, project_name}: TaskDetailClientProps) {
+export default function TaskDetailClient({ task, project_name, isMentor}: TaskDetailClientProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [submissions, setSubmissions] = useState<string[]>(task.file_submissions || []);
+  const [mentorComment, setMentorComment] = useState("");
   const router = useRouter();
   
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,8 +63,23 @@ export default function TaskDetailClient({ task, project_name}: TaskDetailClient
     e.target.value = '';
   }
   };
+  const handleReview = async (IsApproved: boolean, comment: string) =>{
+     try{
+        const res = await reviewSubmission(task.id,IsApproved,comment);
 
-
+        if(res.success){
+          alert('Submission Approved successfully!');
+          setMentorComment("")
+          router.refresh?.();
+        }else{
+          alert(res.error || "Failed to review submission");
+        }
+     }
+     catch(error){
+        console.error(error);
+        alert("An unexpected error occurred.");
+     } 
+  };
   const handleRemoveSubmission = async (path: string) => {
     if (!confirm("Are you sure you want to remove this submission?")) return;
 
@@ -81,6 +98,7 @@ export default function TaskDetailClient({ task, project_name}: TaskDetailClient
       alert("Failed to remove submission.");
     }
   };
+
 
   const handleDownload = (path: string) => {
     const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/student_submissions/${path}`;
@@ -169,35 +187,41 @@ export default function TaskDetailClient({ task, project_name}: TaskDetailClient
         <div className="bg-slate-900/30 border border-slate-800 rounded-xl p-6 mt-6">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <h2 className="text-white text-lg">Submissions</h2>
+              <h2 className="text-white text-lg">
+                {isMentor ? "Student Submissions" : "Your Submission"}
+              </h2>
               <p className="text-slate-400 text-sm">
-                Upload your task output or materials
+                {isMentor
+                  ? "Review submitted files from the assigned student"
+                  : "Upload your task output or materials"}
               </p>
             </div>
 
-            <label>
-              <input 
-                type="file" 
-                className="hidden" 
-                onChange={handleFileUpload} 
-                disabled={isUploading}
-              />
-              <Button 
-                asChild
-                disabled={isUploading} 
-                className="bg-blue-500 hover:bg-blue-600"
-              >
-                <div className="cursor-pointer">
-                  <Upload className="w-4 h-4 mr-2" />
-                  {isUploading ? "Uploading..." : "Upload File"}
-                </div>
-              </Button>
-            </label>
+            {!isMentor && (
+              <label>
+                <input 
+                  type="file" 
+                  className="hidden" 
+                  onChange={handleFileUpload} 
+                  disabled={isUploading}
+                />
+                <Button 
+                  asChild
+                  disabled={isUploading} 
+                  className="bg-blue-500 hover:bg-blue-600"
+                >
+                  <div className="cursor-pointer">
+                    <Upload className="w-4 h-4 mr-2" />
+                    {isUploading ? "Uploading..." : "Upload File"}
+                  </div>
+                </Button>
+              </label>
+            )}  
           </div>
 
           {submissions.length === 0 ? (
             <div className="border border-dashed border-slate-700 rounded-lg p-10 text-center text-slate-500">
-              No submitted files yet
+              {isMentor ? "No submissions yet" : "You have not submitted any files"}
             </div>
           ) : (
             <div className="space-y-4">
@@ -223,20 +247,59 @@ export default function TaskDetailClient({ task, project_name}: TaskDetailClient
                   >
                     <Download className="w-4 h-4" />
                   </Button>
-
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    onClick={() => handleRemoveSubmission(path)}
-                    title="Remove"
-                  >
-                    <X className="w-4 h-4 text-red-400" />
-                  </Button>
+                  
+                  {!isMentor && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={() => handleRemoveSubmission(path)}
+                      title="Remove"
+                    >
+                      <X className="w-4 h-4 text-red-400" />
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>
           )}
+
+          {!isMentor && task.mentor_review && (
+            <div className="bg-slate-900/30 border border-slate-800 rounded-xl p-6 mt-6">
+              <h2 className="text-white text-lg mb-2">Mentor Review</h2>
+
+              <div className="p-4 bg-slate-800/40 rounded-lg border border-slate-700">
+              <p className="text-slate-300 whitespace-pre-line">
+                {task.mentor_review}
+              </p>
+            </div>
+          </div>
+        )}
         </div>
+        {isMentor && (
+          <div className="pt-5 space-y-3">
+            <div className="flex flex-col">
+              <label className="text-slate-400 mb-1">Comment <span className="text-red-400">*</span></label>
+              <textarea
+                className="bg-slate-800 text-white p-2 rounded border border-slate-700 resize-none focus:outline-none focus:ring focus:ring-blue-500"
+                rows={3}
+                placeholder="Enter your comment"
+                value={mentorComment}
+                onChange={(e) => setMentorComment(e.target.value)}
+              />              
+            </div>
+              
+            <div className="flex items-center gap-2 pt-5">
+              <Button className="bg-green-600 hover:bg-green-700 text-white"
+                onClick={() => handleReview(true, mentorComment)}>
+                Approve
+              </Button>
+              <Button className="bg-red-600 hover:bg-red-700 text-white"
+                onClick={() => handleReview(true, mentorComment)}>
+                Reject
+              </Button>
+            </div>            
+          </div>
+        )}
       </main>
     </div>
   );

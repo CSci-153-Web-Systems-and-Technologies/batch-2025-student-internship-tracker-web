@@ -18,7 +18,7 @@ export enum TaskPriority {
 export enum TaskStatus {
   TODO = "todo",
   IN_PROGRESS = "in_progress",
-  DONE = "done",
+  COMPLETED = "completed",
   VERIFYING = "verifying",
   CANCELLED = "cancelled",
 }
@@ -76,6 +76,7 @@ export type Task = {
   updated_at: string;
   due_date: string;
   file_submissions: string[];
+  mentor_review: string;
 };
 
  export interface DataTableProps<TData, TValue>{

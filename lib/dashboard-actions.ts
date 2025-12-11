@@ -31,8 +31,8 @@ export async function getMentorDashboardData(org_id: string) {
   }
 
   const totalTasks = allTasks.length;
-  const completedTasks = allTasks.filter((t) => t.status === "done").length;
-  const activeTasks = allTasks.filter((t) => t.status !== "done").length;
+  const completedTasks = allTasks.filter((t) => t.status === "completed").length;
+  const activeTasks = allTasks.filter((t) => t.status !== "completed").length;
   const pendingReviews = allTasks.filter((t) => t.status === "verifying").length;
   const mentorReviews = allTasks.filter((t) => (t.file_submissions || []).length > 0).length;
   const completionRate = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
@@ -40,7 +40,7 @@ export async function getMentorDashboardData(org_id: string) {
   let projectsDone = 0;
   for (const p of projects) {
     const tasks = projectTasksMap[p.id] || [];
-    if (tasks.length > 0 && tasks.every((t) => t.status === "done")) projectsDone++;
+    if (tasks.length > 0 && tasks.every((t) => t.status === "completed")) projectsDone++;
   }
 
   const recentActivities = allTasks
@@ -54,7 +54,7 @@ export async function getMentorDashboardData(org_id: string) {
 
   const projectCards = projects.map((p) => {
     const tasks = projectTasksMap[p.id] || [];
-    const completed = tasks.filter((t) => t.status === "done").length;
+    const completed = tasks.filter((t) => t.status === "completed").length;
     const recent = tasks.slice().sort((a, b) => {
       const at = new Date(a.updated_at || a.created_at || 0).getTime();
       const bt = new Date(b.updated_at || b.created_at || 0).getTime();
@@ -111,16 +111,16 @@ export async function getStudentDashboardData(org_id: string) {
   }
 
   const totalTasks = allAssignedTasks.length;
-  const completedTasks = allAssignedTasks.filter((t) => t.status === "done").length;
-  const activeTasks = allAssignedTasks.filter((t) => t.status !== "done").length;
+  const completedTasks = allAssignedTasks.filter((t) => t.status === "completed").length;
+  const activeTasks = allAssignedTasks.filter((t) => t.status !== "completed").length;
   const pendingReviews = allAssignedTasks.filter((t) => t.status === "verifying").length;
-  const mentorReviews = allAssignedTasks.filter((t) => (t.file_submissions || []).length > 0).length;
+  const mentorReviews = allAssignedTasks.filter((t) => (t.mentor_review || []).length > 0).length;
   const completionRate = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
 
   let projectsDone = 0;
   for (const p of projects) {
     const tasks = projectTasksMap[p.id] || [];
-    if (tasks.length > 0 && tasks.every((t) => t.status === "done")) projectsDone++;
+    if (tasks.length > 0 && tasks.every((t) => t.status === "completed")) projectsDone++;
   }
 
   const recentActivities = allAssignedTasks
@@ -135,7 +135,7 @@ export async function getStudentDashboardData(org_id: string) {
   const projectCards = projects
     .map((p) => {
       const tasks = projectTasksMap[p.id] || [];
-      const completed = tasks.filter((t) => t.status === "done").length;
+      const completed = tasks.filter((t) => t.status === "completed").length;
       const recent = tasks.slice().sort((a, b) => {
         const at = new Date(a.updated_at || a.created_at || 0).getTime();
         const bt = new Date(b.updated_at || b.created_at || 0).getTime();

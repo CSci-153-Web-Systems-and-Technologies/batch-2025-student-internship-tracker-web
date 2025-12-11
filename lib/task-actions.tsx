@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { CreateProjectDTO, CreateTaskDTO,UploadOptions, UploadResponse } from "@/types";
 import { User } from "@supabase/supabase-js";
+import { Task } from '../types/index';
 
 export async function createProject(payload: CreateProjectDTO) {
     console.log("Creating project with payload:", payload);
@@ -379,4 +380,36 @@ export async function removeStudentSubmission(taskId: string) {
     success: true,
     message: "Submission successfully removed.",
   };
+}
+
+export async function reviewSubmission(task_id:string,IsApproved:boolean, comment:string){
+  const supabase = await createClient();
+  let newStatus: string;
+  try{
+    if(IsApproved === true){
+      newStatus = "completed";
+    }
+    else if(IsApproved === false){
+      newStatus = "revise";
+    } else{
+      throw new Error("Invalid action");
+    }
+
+    const { data, error } = await supabase
+      .from("task")
+      .update({
+        status: newStatus,
+        mentor_review: comment,
+      })
+      .eq("id", task_id)
+      .select()
+      .single();
+
+    if (error) throw error;      
+    return { success: true, data };
+  }catch(error:any){
+    console.error("[reviewSubmission] Error:", error);
+    return { success: false, error: error.message };
+  }
+  
 }
