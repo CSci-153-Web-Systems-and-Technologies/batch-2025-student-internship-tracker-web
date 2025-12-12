@@ -18,7 +18,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   
   return (
     <SidebarProvider >
-      {showSidebar && <AppSidebar/> }
+      {showSidebar && <AppSidebar />}
         <SidebarInset className="flex flex-col min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 text-white text-white">
           {showNavbar && <NavBar />}
            <div className="pl-40 ">

@@ -1,7 +1,8 @@
 "use client";
 
+import { useState, Suspense } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useSidebarData } from "@/components/sidebar-data";
 import {
   Sidebar,
   SidebarContent,
@@ -13,45 +14,30 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
-
 import { LayoutDashboard, Bell, ListTodo, UserPlus } from "lucide-react";
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/shadcn-io/spinner";
 
-import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { getUserProfile } from "@/lib/org-actions";
+function SidebarLoading() {
+  return (
+    <Sidebar className="w-16 bg-slate-900 border-r border-white/10">
+      <div className="flex items-center justify-center h-full">
+        <Spinner className="h-6 w-6" />
+      </div>
+    </Sidebar>
+  );
+}
 
-export function AppSidebar() {
-  const { org_id } = useParams() as { org_id: string };
+function AppSidebarContent() {
+  const { org_id, inviteCode, isMentor } = useSidebarData();
 
-  const [inviteCode, setInviteCode] = useState("");
-  const [isMentor, setIsMentor] = useState(false);
-
-  useEffect(() => {
-    async function load() {
-      const supabase = createClient();
-
-      const { data: org } = await supabase
-        .from("organizations")
-        .select("invite_code")
-        .eq("id", org_id)
-        .single();
-
-      if (org?.invite_code) setInviteCode(org.invite_code);
-
-      const { isMentor } = await getUserProfile();
-      setIsMentor(isMentor);
+  const copyToClipboard = () => {
+    if (inviteCode) {
+      navigator.clipboard.writeText(inviteCode);
     }
-
-    load();
-  }, [org_id]);
-
-  function copyToClipboard() {
-    navigator.clipboard.writeText(inviteCode);
-  }
+  };
 
   return (
     <Sidebar
@@ -67,8 +53,6 @@ export function AppSidebar() {
           </SidebarGroupLabel>
 
           <SidebarMenu className="pt-6">
-
-            {/* Dashboard */}
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
                 <Link href={`/dashboard/${org_id}`}>
@@ -78,7 +62,6 @@ export function AppSidebar() {
               </SidebarMenuButton>
             </SidebarMenuItem>
 
-            {/* Tasks */}
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
                 <Link href={`/dashboard/${org_id}/projects`}>
@@ -88,7 +71,6 @@ export function AppSidebar() {
               </SidebarMenuButton>
             </SidebarMenuItem>
 
-            {/* Notifications */}
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
                 <Link href={`/dashboard/${org_id}/notifications`}>
@@ -119,20 +101,29 @@ export function AppSidebar() {
                       </p>
 
                       <div className="flex items-center space-x-2">
-                        <Input value={inviteCode} readOnly className="font-mono" />
-                        <Button onClick={copyToClipboard}>Copy</Button>
+                        <Input value={inviteCode || "No invite code"} readOnly className="font-mono" />
+                        <Button onClick={copyToClipboard} disabled={!inviteCode}>
+                          Copy
+                        </Button>
                       </div>
                     </div>
                   </DialogContent>
                 </Dialog>
               </SidebarMenuItem>
             )}
-
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter />
     </Sidebar>
+  );
+}
+
+export function AppSidebar() {
+  return (
+    <Suspense fallback={<SidebarLoading />}>
+      <AppSidebarContent />
+    </Suspense>
   );
 }
