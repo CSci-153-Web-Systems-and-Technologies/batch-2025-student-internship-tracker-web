@@ -308,14 +308,12 @@ export async function uploadStudentSubmission({
 
     if (!file) return { success: false, error: "No file provided" };
 
-
     const fileExt = file.name.split(".").pop();
     const fileName = `${crypto.randomUUID()}.${fileExt}`;
     const filePath =
       folderPath && folderPath.length > 0
         ? `${folderPath}/${fileName}`
         : fileName;
-
 
     const { error: uploadError } = await supabase.storage
       .from(bucketId)
@@ -330,11 +328,16 @@ export async function uploadStudentSubmission({
 
     const newFiles = [...(taskData.file_submissions || []), filePath];
 
+    const newStatus =
+      taskData.status === "not_started"
+        ? "in_progress"
+        : taskData.status;
+
     const { error: updateError } = await supabase
       .from("task")
       .update({
         file_submissions: newFiles,
-        status: "verifying",
+        status: newStatus,
       })
       .eq("id", task_id);
 
@@ -342,34 +345,65 @@ export async function uploadStudentSubmission({
       return { success: false, error: updateError.message };
     }
 
-    console.log(taskData.org_id)
-
     const { data: urlData } = supabase.storage
       .from(bucketId)
       .getPublicUrl(filePath);
 
-    //notify mentors
-    const { data: mentors } = await supabase
-      .from("organization_members")
-      .select("id")
-      .eq("org_id", taskData.org_id)
-      .eq("role", "mentor");
-
-    for (const m of mentors||[]) {
-      await notifyUser({
-        user_id: m.id,
-        origin: `/dashboard/${taskData.org_id}/tasks/${task_id}`,
-        org_id: taskData.org_id,
-        type: "submission_uploaded",
-        title: "New Submission",
-        message: `A student has submitted their task: ${task_id}`
-      });
-    }
-      
     return {
       success: true,
       data: { path: filePath, publicUrl: urlData.publicUrl },
     };
+
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+
+export async function submitTaskForReview(task_id: string) {
+  const supabase = await createClient();
+
+  try {
+    const { data: task, error } = await supabase
+      .from("task")
+      .select("*")
+      .eq("id", task_id)
+      .single();
+
+    if (error || !task) {
+      return { success: false, error: "Task not found" };
+    }
+
+    if (!task.file_submissions || task.file_submissions.length === 0) {
+      return { success: false, error: "Upload a file first." };
+    }
+
+
+    await supabase
+      .from("task")
+      .update({ status: "verifying" })
+      .eq("id", task_id);
+
+
+    const { data: mentors } = await supabase
+      .from("organization_members")
+      .select("id")
+      .eq("org_id", task.org_id)
+      .eq("role", "mentor");
+
+    for (const m of mentors || []) {
+      await notifyUser({
+        user_id: m.id,
+        origin: `/dashboard/${task.org_id}/tasks/${task_id}`,
+        org_id: task.org_id,
+        type: "submission_ready",
+        title: "Submission Ready for Review",
+        message: `A student has submitted task at ${task.title} for review.`,
+      });
+    }
+
+    return { success: true };
+
   } catch (err: any) {
     return { success: false, error: err.message };
   }

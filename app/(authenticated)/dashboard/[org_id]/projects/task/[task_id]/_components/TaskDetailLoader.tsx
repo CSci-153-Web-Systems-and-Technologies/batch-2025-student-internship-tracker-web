@@ -1,8 +1,14 @@
-"use client"
+"use client";
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { uploadStudentSubmission, removeStudentSubmission,reviewSubmission } from "@/lib/task-actions";
-import { Task} from "@/types";
+import {
+  uploadStudentSubmission,
+  removeStudentSubmission,
+  reviewSubmission,
+  submitTaskForReview,
+} from "@/lib/task-actions";
+import { Task } from "@/types";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -23,63 +29,68 @@ interface TaskDetailClientProps {
   isMentor: boolean;
 }
 
-export default function TaskDetailClient({ task, project_name, isMentor}: TaskDetailClientProps) {
+export default function TaskDetailClient({
+  task,
+  project_name,
+  isMentor,
+}: TaskDetailClientProps) {
   const [isUploading, setIsUploading] = useState(false);
-  const [submissions, setSubmissions] = useState<string[]>(task.file_submissions || []);
+  const [submissions, setSubmissions] = useState<string[]>(
+    task.file_submissions || []
+  );
   const [mentorComment, setMentorComment] = useState("");
   const router = useRouter();
-  
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const files = e.target.files;
-  if (!files?.length) return;
+    const files = e.target.files;
+    if (!files?.length) return;
 
-  setIsUploading(true);
-  const file = files[0];
+    setIsUploading(true);
+    const file = files[0];
 
-  console.log("[Upload] Selected file:", file.name, file.size, file.type);
+    console.log("[Upload] Selected file:", file.name, file.size, file.type);
 
-  try {
-    const res = await uploadStudentSubmission({
-      file,
-      task_id: task.id,
-      folderPath: `${task.id}`,
-    });
+    try {
+      const res = await uploadStudentSubmission({
+        file,
+        task_id: task.id,
+        folderPath: `${task.id}`,
+      });
 
-    console.log("[Upload] Response from uploadStudentSubmission:", res);
+      console.log("[Upload] Response:", res);
 
-    if (res.success && res.data) {
-      console.log("[Upload] File uploaded successfully, path:", res.data.path);
-      setSubmissions((prev) => [...prev, res.data?.path || ""]);
-      router.refresh?.();
-    } else {
-      console.warn("[Upload] Upload failed:", res.error);
-      alert(res.error || "Upload failed");
+      if (res.success && res.data) {
+        setSubmissions((prev) => [...prev, res.data.path]);
+        router.refresh?.();
+      } else {
+        alert(res.error || "Upload failed");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Failed to upload file");
+    } finally {
+      setIsUploading(false);
+      e.target.value = "";
     }
-  } catch (error) {
-    console.error("[Upload] Unexpected error:", error);
-    alert("Failed to upload file");
-  } finally {
-    setIsUploading(false);
-    e.target.value = '';
-  }
   };
-  const handleReview = async (IsApproved: boolean, comment: string) =>{
-     try{
-        const res = await reviewSubmission(task.id,IsApproved,comment);
 
-        if(res.success){
-          alert('Submission Approved successfully!');
-          setMentorComment("")
-          router.refresh?.();
-        }else{
-          alert(res.error || "Failed to review submission");
-        }
-     }
-     catch(error){
-        console.error(error);
-        alert("An unexpected error occurred.");
-     } 
+  const handleReview = async (isApproved: boolean, comment: string) => {
+    try {
+      const res = await reviewSubmission(task.id, isApproved, comment);
+
+      if (res.success) {
+        alert("Submission reviewed successfully!");
+        setMentorComment("");
+        router.refresh?.();
+      } else {
+        alert(res.error || "Failed to review submission");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("An unexpected error occurred.");
+    }
   };
+
   const handleRemoveSubmission = async (path: string) => {
     if (!confirm("Are you sure you want to remove this submission?")) return;
 
@@ -88,7 +99,6 @@ export default function TaskDetailClient({ task, project_name, isMentor}: TaskDe
 
       if (res.success) {
         setSubmissions((prev) => prev.filter((sub) => sub !== path));
-        alert("Submission removed successfully!");
         router.refresh?.();
       } else {
         alert(res.message || "No submission found.");
@@ -99,6 +109,21 @@ export default function TaskDetailClient({ task, project_name, isMentor}: TaskDe
     }
   };
 
+  const handleSubmitForReview = async () => {
+    try {
+      const res = await submitTaskForReview(task.id);
+
+      if (res.success) {
+        alert("Task submitted for review!");
+        router.refresh?.();
+      } else {
+        alert(res.error || "Failed to submit task for review");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("An unexpected error occurred.");
+    }
+  };
 
   const handleDownload = (path: string) => {
     const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/student_submissions/${path}`;
@@ -108,7 +133,6 @@ export default function TaskDetailClient({ task, project_name, isMentor}: TaskDe
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 flex">
       <main className="flex-1 p-10 max-w-5xl mx-auto">
-        
         <Button
           onClick={() => router.back()}
           variant="ghost"
@@ -128,12 +152,10 @@ export default function TaskDetailClient({ task, project_name, isMentor}: TaskDe
           {project_name} • Task ID: {task.id}
         </p>
 
-
         <div className="bg-slate-900/30 border border-slate-800 rounded-xl p-6 mt-6">
           <h2 className="text-white text-lg mb-4">Task Details</h2>
 
           <div className="grid grid-cols-2 gap-6">
-
             <div className="flex gap-3">
               <Flag className="text-yellow-300" />
               <div>
@@ -141,7 +163,6 @@ export default function TaskDetailClient({ task, project_name, isMentor}: TaskDe
                 <p className="text-white">{task.priority}</p>
               </div>
             </div>
-
 
             {task.assigned_to && (
               <div className="flex gap-3">
@@ -152,7 +173,6 @@ export default function TaskDetailClient({ task, project_name, isMentor}: TaskDe
                 </div>
               </div>
             )}
-
 
             {task.due_date && (
               <div className="flex gap-3">
@@ -166,7 +186,6 @@ export default function TaskDetailClient({ task, project_name, isMentor}: TaskDe
               </div>
             )}
 
-
             <div className="flex gap-3">
               <Tag className="text-slate-300" />
               <div>
@@ -176,13 +195,11 @@ export default function TaskDetailClient({ task, project_name, isMentor}: TaskDe
             </div>
           </div>
 
-
           <div className="mt-6 pt-6 border-t border-slate-800">
             <p className="text-slate-400 text-sm">Description</p>
             <p className="text-slate-300 mt-1">{task.description}</p>
           </div>
         </div>
-
 
         <div className="bg-slate-900/30 border border-slate-800 rounded-xl p-6 mt-6">
           <div className="flex justify-between items-center mb-4">
@@ -199,15 +216,16 @@ export default function TaskDetailClient({ task, project_name, isMentor}: TaskDe
 
             {!isMentor && task.status !== "completed" && (
               <label>
-                <input 
-                  type="file" 
-                  className="hidden" 
-                  onChange={handleFileUpload} 
+                <input
+                  type="file"
+                  className="hidden"
+
                   disabled={isUploading}
+                  onChange={handleFileUpload}
                 />
-                <Button 
+                <Button
                   asChild
-                  disabled={isUploading} 
+                  disabled={isUploading}
                   className="bg-blue-500 hover:bg-blue-600"
                 >
                   <div className="cursor-pointer">
@@ -216,12 +234,14 @@ export default function TaskDetailClient({ task, project_name, isMentor}: TaskDe
                   </div>
                 </Button>
               </label>
-            )}  
+            )}
           </div>
 
           {submissions.length === 0 ? (
             <div className="border border-dashed border-slate-700 rounded-lg p-10 text-center text-slate-500">
-              {isMentor ? "No submissions yet" : "You have not submitted any files"}
+              {isMentor
+                ? "No submissions yet"
+                : "You have not submitted any files"}
             </div>
           ) : (
             <div className="space-y-4">
@@ -233,27 +253,27 @@ export default function TaskDetailClient({ task, project_name, isMentor}: TaskDe
                   <FileIcon className="text-blue-400" />
 
                   <div className="flex-1 overflow-hidden">
-                    <p className="text-white truncate">{path.split("/").pop()}</p>
+                    <p className="text-white truncate">
+                      {path.split("/").pop()}
+                    </p>
                     <p className="text-slate-400 text-sm truncate">{path}</p>
                   </div>
 
                   <CheckCircle2 className="text-green-400" />
 
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="icon"
                     onClick={() => handleDownload(path)}
-                    title="Download"
                   >
                     <Download className="w-4 h-4" />
                   </Button>
-                  
+
                   {!isMentor && (
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       size="icon"
                       onClick={() => handleRemoveSubmission(path)}
-                      title="Remove"
                     >
                       <X className="w-4 h-4 text-red-400" />
                     </Button>
@@ -262,8 +282,22 @@ export default function TaskDetailClient({ task, project_name, isMentor}: TaskDe
               ))}
             </div>
           )}
+        </div>
 
-          {!isMentor && task.mentor_review && (
+        {!isMentor &&
+          submissions.length > 0 &&
+          task.status !== "verifying" && (
+            <div className="pt-6">
+              <Button
+                className="bg-emerald-600 hover:bg-emerald-700 text-white w-full"
+                onClick={handleSubmitForReview}
+              >
+                Submit for Review
+              </Button>
+            </div>
+        )}
+
+        {!isMentor && task.mentor_review && (
             <div className="bg-slate-900/30 border border-slate-800 rounded-xl p-6 mt-6">
               <h2 className="text-white text-lg mb-2">Mentor Review</h2>
 
@@ -274,31 +308,37 @@ export default function TaskDetailClient({ task, project_name, isMentor}: TaskDe
             </div>
           </div>
         )}
-        
-        </div>
-        {isMentor && task.status !== "completed" &&(
+
+        {isMentor && task.status !== "completed" && (
           <div className="pt-5 space-y-3">
             <div className="flex flex-col">
-              <label className="text-slate-400 mb-1">Comment <span className="text-red-400">*</span></label>
+              <label className="text-slate-400 mb-1">
+                Comment <span className="text-red-400">*</span>
+              </label>
               <textarea
-                className="bg-slate-800 text-white p-2 rounded border border-slate-700 resize-none focus:outline-none focus:ring focus:ring-blue-500"
                 rows={3}
                 placeholder="Enter your comment"
+                className="bg-slate-800 text-white p-2 rounded border border-slate-700 resize-none focus:outline-none focus:ring focus:ring-blue-500"
                 value={mentorComment}
                 onChange={(e) => setMentorComment(e.target.value)}
-              />              
+              />
             </div>
-              
+
             <div className="flex items-center gap-2 pt-5">
-              <Button className="bg-green-600 hover:bg-green-700 text-white"
-                onClick={() => handleReview(true, mentorComment)}>
+              <Button
+                className="bg-green-600 hover:bg-green-700 text-white"
+                onClick={() => handleReview(true, mentorComment)}
+              >
                 Approve
               </Button>
-              <Button className="bg-red-600 hover:bg-red-700 text-white"
-                onClick={() => handleReview(true, mentorComment)}>
+
+              <Button
+                className="bg-red-600 hover:bg-red-700 text-white"
+                onClick={() => handleReview(false, mentorComment)}
+              >
                 Reject
               </Button>
-            </div>            
+            </div>
           </div>
         )}
       </main>

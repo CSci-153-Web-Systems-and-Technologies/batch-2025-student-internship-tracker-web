@@ -130,7 +130,7 @@ export default function Home() {
                 Join thousands of teams already building amazing products with LaunchPad. Start your free trial today.
                 </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                <Button size="lg" className="bg-white text-blue-600 hover:bg-slate-100" onClick={()=>router.push('/app/(auth)/login')}>
+                <Button size="lg" className="bg-white text-blue-600 hover:bg-slate-100" onClick={()=>router.push('/login')}>
     Get Started
                 </Button>
               </div>
