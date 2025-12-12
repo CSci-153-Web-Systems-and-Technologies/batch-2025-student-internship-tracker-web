@@ -34,17 +34,11 @@ export async function updateSession(request: NextRequest) {
       path.startsWith("/auth") ||
       path.startsWith("/emailconfirm"))
   ) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return NextResponse.redirect(new URL("/organization", request.url));
   }
-
-  if (
-    !user &&
-    !path.startsWith("/login") &&
-    !path.startsWith("/signup") &&
-    !path.startsWith("/auth") &&
-    !path.startsWith("/emailconfirm")
-  ) {
-    return NextResponse.redirect(new URL("/login", request.url));
+  const publicRoutes = ["/", "/login", "/signup", "/auth", "/emailconfirm"];
+  if (!user && !publicRoutes.some((route) => path.startsWith(route))) {
+  return NextResponse.redirect(new URL("/login", request.url));
   }
 
   return response;
