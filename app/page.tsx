@@ -30,14 +30,14 @@ export default function Home() {
 
                   <p className="text-slate-300 text-lg text-justify">
                     Streamline your internship tasks, track progress, and
-                    manage offers all in one place with LaunchPad. Actually
-                    designed to launch it straight down to the ground.
+                    manage offers all in one place with LaunchPad.
                   </p>
 
                   <div className="flex flex-col sm:flex-row gap-4">
                     <Button size="lg" className="bg-blue-500 hover:bg-blue-600 text-white" onClick={()=> router.push('/login')} >
                       Get Started
                     </Button>
+                    
                     
                     <Link href="https://www.youtube.com/shorts/ybgTBIzWEpM" className="inline-flex items-center justify-center px-4 py-2 rounded-md border border-slate-600 text-blue-500 hover:bg-white/10 bg-white">
                       Watch Demo
@@ -46,17 +46,17 @@ export default function Home() {
 
                   <div className ="flex item-center gap-8 pt-4 ">
                     <div>
-                      <div className="text-white">1+</div>
+                      <div className="text-white">10+</div>
                       <div className="text-slate-400">Active User</div>
                     </div>
                     <div className="w-px h-12 bg-slate-700"></div>
                       <div>
-                        <div className="text-white">0</div>
+                        <div className="text-white">4</div>
                         <div className="text-slate-400">Projects Launched</div>
                       </div>
                     <div className="w-px h-12 bg-slate-700"></div>
                       <div>
-                        <div className="text-white">0%</div>
+                        <div className="text-white">69%</div>
                         <div className="text-slate-400">Success Rate</div>
                       </div>
                     </div>
@@ -100,9 +100,9 @@ export default function Home() {
                    <div className= "w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center">
                       <Calendar className="w-6 h-6 text-blue-300" />
                    </div>
-                   <h3 className="text-white">Calendar System</h3>
+                   <h3 className="text-white">Notification System</h3>
                    <p className="text-slate-400">
-                      Stay organized and never miss a deadline with our integrated calendar system, designed to keep you on track throughout your internship.
+                      Stay organized and never miss a deadline with our integrated Notification System, designed to keep you on track throughout your internship.
                    </p>
                 </CardContent>
              </Card>
@@ -114,7 +114,7 @@ export default function Home() {
                    </div>
                    <h3 className="text-white">Dashboard Analytics</h3>
                    <p className="text-slate-400">
-                      Gain insights into your internship performance with our comprehensive dashboard analytics, helping you track your progress and achievements.
+                      Gain insights into your internship performance with our comprehensive dashboard analytics, helping you track your progress.
                    </p>
                 </CardContent>
              </Card>
