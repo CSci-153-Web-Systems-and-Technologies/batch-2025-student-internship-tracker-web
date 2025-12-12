@@ -44,6 +44,7 @@ export async function createProject(payload: CreateProjectDTO) {
       await notifyUser({
         user_id: m.id,
         origin: `/dashboard/${org_id}/projects/${data.id}`,
+        org_id: org_id,
         type: "project_created",
         title: "New Project",
         message: `${name} has been created`
@@ -101,6 +102,7 @@ export async function createTask(payload: CreateTaskDTO) {
       await notifyUser({
         user_id: m.id,
         origin: `/dashboard/${org_id}/projects/${project_id}`,
+        org_id: org_id,
         type: "task_assigned",
         title: "New Task Assigned",
         message: `You have been assigned to: ${title}`
@@ -284,7 +286,7 @@ export async function uploadStudentSubmission({
 
     const { data: taskData, error: taskError } = await supabase
       .from("task")
-      .select("id, assigned_to, file_submissions, status, org_id")
+      .select("*")
       .eq("id", task_id)
       .single();
 
@@ -340,6 +342,7 @@ export async function uploadStudentSubmission({
       return { success: false, error: updateError.message };
     }
 
+    console.log(taskData.org_id)
 
     const { data: urlData } = supabase.storage
       .from(bucketId)
@@ -356,6 +359,7 @@ export async function uploadStudentSubmission({
       await notifyUser({
         user_id: m.id,
         origin: `/dashboard/${taskData.org_id}/tasks/${task_id}`,
+        org_id: taskData.org_id,
         type: "submission_uploaded",
         title: "New Submission",
         message: `A student has submitted their task: ${task_id}`
@@ -455,7 +459,7 @@ export async function reviewSubmission(task_id:string,IsApproved:boolean, commen
     
     const { data: taskInfo} = await supabase
       .from("task")
-      .select("assigned_to")
+      .select("assigned_to, org_id")
       .eq("id", task_id)
       .single();
     if (!taskInfo) {
@@ -470,6 +474,7 @@ export async function reviewSubmission(task_id:string,IsApproved:boolean, commen
       await notifyUser({
         user_id: s.id,
         origin: `/dashboard/tasks/${task_id}`,
+        org_id: taskInfo.org_id,
         type: "task_reviewed",
         title: IsApproved ? "Task Approved" : "Task Requires Changes",
         message: comment
