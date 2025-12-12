@@ -21,9 +21,13 @@ import { Input } from "@/components/ui/input";
 
 export function SidebarLoading() {
   return (
-    <Sidebar className="w-16 bg-slate-900 border-r border-white/10">
-      <div className="flex items-center justify-center h-full text-center px-2">
-        <p className="text-white text-sm">
+    <Sidebar
+      collapsible="icon"
+      className="group w-16 hover:w-40 transition-all duration-300 bg-slate-900 border-r border-white/10 text-white"
+    >
+      <div className="flex flex-col items-center justify-center h-full px-2">
+        <LayoutDashboard className="h-6 w-6" />
+        <p className="mt-2 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-center">
           Go to an organization to load the sidebar
         </p>
       </div>
