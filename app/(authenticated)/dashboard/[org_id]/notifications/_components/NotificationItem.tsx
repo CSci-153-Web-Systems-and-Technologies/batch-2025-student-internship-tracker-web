@@ -12,13 +12,13 @@ export default function NotificationItem({ notif }:NotificationProp) {
   const router = useRouter();
 
   const handleMarkRead = async () => {
-  try {
-    await markAsRead(notif);
-    router.refresh();
-  } catch (err) {
-    console.error(err);
-  }
-};
+    try {
+      await markAsRead(notif);
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
 
   return (
@@ -28,7 +28,7 @@ export default function NotificationItem({ notif }:NotificationProp) {
           ? "border-slate-700 bg-slate-800/50"
           : "border-blue-500/30 bg-blue-700/20"
       }`}
-      onClick={()=>handleMarkRead}
+      onClick={handleMarkRead}
     >
       <div className="flex justify-between items-start">
         <div>
