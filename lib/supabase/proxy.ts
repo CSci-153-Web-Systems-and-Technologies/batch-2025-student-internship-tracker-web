@@ -46,21 +46,31 @@ export async function updateSession(request: NextRequest) {
   // with the Supabase client, your users may be randomly logged out.
   const { data } = await supabase.auth.getClaims();
   const user = data?.claims;
-    
   if (
+  user &&
+  (
+    request.nextUrl.pathname.startsWith("/login") ||
+    request.nextUrl.pathname.startsWith("/signup") ||
+    request.nextUrl.pathname.startsWith("/auth") ||
+    request.nextUrl.pathname.startsWith("/emailconfirm")
+  )) {
+  const url = request.nextUrl.clone();
+  url.pathname = "/organization";
+  return NextResponse.redirect(url);
+  }  
+  
+   if(!user && (
     request.nextUrl.pathname !== "/" &&
-    !user &&
     !request.nextUrl.pathname.startsWith("/login") &&
     !request.nextUrl.pathname.startsWith("/auth") &&
     !request.nextUrl.pathname.startsWith("/signup") &&
     !request.nextUrl.pathname.startsWith("/emailconfirm") &&
-    !request.nextUrl.pathname.startsWith("/mentor/dashboard") &&
-    !request.nextUrl.pathname.startsWith("/student/dashboard")
-  ) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
-  }
+    !request.nextUrl.pathname.startsWith("/dashboard")
+  )){
+  const url = request.nextUrl.clone();
+  url.pathname = "/login";
+  return NextResponse.redirect(url);
+}
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
   // If you're creating a new response object with NextResponse.next() make sure to:
