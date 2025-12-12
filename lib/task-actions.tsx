@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { CreateProjectDTO, CreateTaskDTO,UploadOptions, UploadResponse } from "@/types";
 import { User } from "@supabase/supabase-js";
-import { Task } from '../types/index';
+import { notifyUser } from "./dashboard-actions";
 
 export async function createProject(payload: CreateProjectDTO) {
     console.log("Creating project with payload:", payload);
@@ -32,6 +32,23 @@ export async function createProject(payload: CreateProjectDTO) {
     }
 
     console.log("Project created successfully:", data);
+
+    const { data: members } = await supabase
+      .from("organization_members")
+      .select("id")
+      .eq("org_id", org_id);
+
+    for (const m of members || []) {
+      if (!m.id) continue;
+      
+      await notifyUser({
+        user_id: m.id,
+        origin: `/dashboard/${org_id}/projects/${data.id}`,
+        type: "project_created",
+        title: "New Project",
+        message: `${name} has been created`
+      });
+    }
     
     revalidatePath(`/dashboard/${org_id}/projects`);
     return data;
@@ -72,6 +89,23 @@ export async function createTask(payload: CreateTaskDTO) {
     ])
     .select()
     .single();
+
+    const { data: members } = await supabase
+      .from("organization_members")
+      .select("id")
+      .in("id", assigned_to);
+    
+     for (const m of members ?? []) {
+      if (!m.id) continue;
+
+      await notifyUser({
+        user_id: m.id,
+        origin: `/dashboard/${org_id}/projects/${project_id}`,
+        type: "task_assigned",
+        title: "New Task Assigned",
+        message: `You have been assigned to: ${title}`
+      });
+    }
 
    if (error) {
     console.error('Supabase error:', error);
@@ -250,7 +284,7 @@ export async function uploadStudentSubmission({
 
     const { data: taskData, error: taskError } = await supabase
       .from("task")
-      .select("id, assigned_to, file_submissions, status")
+      .select("id, assigned_to, file_submissions, status, org_id")
       .eq("id", task_id)
       .single();
 
@@ -311,6 +345,23 @@ export async function uploadStudentSubmission({
       .from(bucketId)
       .getPublicUrl(filePath);
 
+    //notify mentors
+    const { data: mentors } = await supabase
+      .from("organization_members")
+      .select("id")
+      .eq("org_id", taskData.org_id)
+      .eq("role", "mentor");
+
+    for (const m of mentors||[]) {
+      await notifyUser({
+        user_id: m.id,
+        origin: `/dashboard/${taskData.org_id}/tasks/${task_id}`,
+        type: "submission_uploaded",
+        title: "New Submission",
+        message: `A student has submitted their task: ${task_id}`
+      });
+    }
+      
     return {
       success: true,
       data: { path: filePath, publicUrl: urlData.publicUrl },
@@ -405,7 +456,30 @@ export async function reviewSubmission(task_id:string,IsApproved:boolean, commen
       .select()
       .single();
 
-    if (error) throw error;      
+    if (error) throw error;
+    
+    const { data: taskInfo} = await supabase
+      .from("task")
+      .select("assigned_to")
+      .eq("id", task_id)
+      .single();
+    if (!taskInfo) {
+      throw new Error("Task not found");
+    }
+    const { data: students } = await supabase
+      .from("organization_members")
+      .select("id")
+      .in("id", taskInfo.assigned_to );
+
+    for (const s of students ?? []) {
+      await notifyUser({
+        user_id: s.id,
+        origin: `/dashboard/tasks/${task_id}`,
+        type: "task_reviewed",
+        title: IsApproved ? "Task Approved" : "Task Requires Changes",
+        message: comment
+      });
+    }
     return { success: true, data };
   }catch(error:any){
     console.error("[reviewSubmission] Error:", error);

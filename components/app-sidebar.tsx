@@ -14,7 +14,7 @@ import {
   SidebarMenuButton,
 } from "@/components/ui/sidebar"
 
-import { LayoutDashboard, Calendar, ListTodo } from "lucide-react";
+import { LayoutDashboard, Bell, ListTodo } from "lucide-react";
  
 export function AppSidebar() {
   const { org_id } = useParams() as { org_id: string };
@@ -33,7 +33,6 @@ export function AppSidebar() {
           </SidebarGroupLabel>
 
           <SidebarMenu className="pt-6">
-            {/* Dashboard */}
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
                 <Link href = {`/dashboard/${org_id}`}>
@@ -47,7 +46,6 @@ export function AppSidebar() {
               </SidebarMenuButton>
             </SidebarMenuItem>
 
-            {/* Tasks */}
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
                 <Link href = {`/dashboard/${org_id}/projects`}>
@@ -61,19 +59,20 @@ export function AppSidebar() {
               </SidebarMenuButton>
             </SidebarMenuItem>
 
-            {/* Calendar */}
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
-                <Link href = {`/dashboard/${org_id}/calendar`}>
-                  <Calendar className="h-4 w-4" />
+                <Link href = {`/dashboard/${org_id}/notifications`}>
+                  <Bell className="h-4 w-4" />
                   <span className="
                       ml-2 
                       hidden group-hover:inline
                       transition-all duration-300
-                    ">Calendar</span>
+                    ">Notifications</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
+
+            
 
           </SidebarMenu>
         </SidebarGroup>
