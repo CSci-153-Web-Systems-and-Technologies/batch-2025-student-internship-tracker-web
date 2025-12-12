@@ -44,6 +44,7 @@ export async function createProject(payload: CreateProjectDTO) {
       await notifyUser({
         user_id: m.id,
         origin: `/dashboard/${org_id}/projects/${data.id}`,
+        org_id: org_id,
         type: "project_created",
         title: "New Project",
         message: `${name} has been created`
@@ -101,6 +102,7 @@ export async function createTask(payload: CreateTaskDTO) {
       await notifyUser({
         user_id: m.id,
         origin: `/dashboard/${org_id}/projects/${project_id}`,
+        org_id: org_id,
         type: "task_assigned",
         title: "New Task Assigned",
         message: `You have been assigned to: ${title}`
@@ -284,7 +286,7 @@ export async function uploadStudentSubmission({
 
     const { data: taskData, error: taskError } = await supabase
       .from("task")
-      .select("id, assigned_to, file_submissions, status, org_id")
+      .select("*")
       .eq("id", task_id)
       .single();
 
@@ -306,14 +308,12 @@ export async function uploadStudentSubmission({
 
     if (!file) return { success: false, error: "No file provided" };
 
-
     const fileExt = file.name.split(".").pop();
     const fileName = `${crypto.randomUUID()}.${fileExt}`;
     const filePath =
       folderPath && folderPath.length > 0
         ? `${folderPath}/${fileName}`
         : fileName;
-
 
     const { error: uploadError } = await supabase.storage
       .from(bucketId)
@@ -328,11 +328,16 @@ export async function uploadStudentSubmission({
 
     const newFiles = [...(taskData.file_submissions || []), filePath];
 
+    const newStatus =
+      taskData.status === "not_started"
+        ? "in_progress"
+        : taskData.status;
+
     const { error: updateError } = await supabase
       .from("task")
       .update({
         file_submissions: newFiles,
-        status: "verifying",
+        status: newStatus,
       })
       .eq("id", task_id);
 
@@ -340,41 +345,74 @@ export async function uploadStudentSubmission({
       return { success: false, error: updateError.message };
     }
 
-
     const { data: urlData } = supabase.storage
       .from(bucketId)
       .getPublicUrl(filePath);
 
-    //notify mentors
-    const { data: mentors } = await supabase
-      .from("organization_members")
-      .select("id")
-      .eq("org_id", taskData.org_id)
-      .eq("role", "mentor");
-
-    for (const m of mentors||[]) {
-      await notifyUser({
-        user_id: m.id,
-        origin: `/dashboard/${taskData.org_id}/tasks/${task_id}`,
-        type: "submission_uploaded",
-        title: "New Submission",
-        message: `A student has submitted their task: ${task_id}`
-      });
-    }
-      
     return {
       success: true,
       data: { path: filePath, publicUrl: urlData.publicUrl },
     };
+
   } catch (err: any) {
     return { success: false, error: err.message };
   }
 }
 
 
-export async function removeStudentSubmission(taskId: string) {
+export async function submitTaskForReview(task_id: string) {
   const supabase = await createClient();
-    
+
+  try {
+    const { data: task, error } = await supabase
+      .from("task")
+      .select("*")
+      .eq("id", task_id)
+      .single();
+
+    if (error || !task) {
+      return { success: false, error: "Task not found" };
+    }
+
+    if (!task.file_submissions || task.file_submissions.length === 0) {
+      return { success: false, error: "Upload a file first." };
+    }
+
+
+    await supabase
+      .from("task")
+      .update({ status: "verifying" })
+      .eq("id", task_id);
+
+
+    const { data: mentors } = await supabase
+      .from("organization_members")
+      .select("id")
+      .eq("org_id", task.org_id)
+      .eq("role", "mentor");
+
+    for (const m of mentors || []) {
+      await notifyUser({
+        user_id: m.id,
+        origin: `/dashboard/${task.org_id}/tasks/${task_id}`,
+        org_id: task.org_id,
+        type: "submission_ready",
+        title: "Submission Ready for Review",
+        message: `A student has submitted task at ${task.title} for review.`,
+      });
+    }
+
+    return { success: true };
+
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+
+export async function removeStudentSubmission(taskId: string, fileToDelete: string) {
+  const supabase = await createClient();
+
   const { data: task, error: taskError } = await supabase
     .from("task")
     .select("file_submissions")
@@ -382,30 +420,23 @@ export async function removeStudentSubmission(taskId: string) {
     .single();
 
   if (taskError) {
-    console.error("[Delete] Task fetch error:", taskError);
-    return {
-      success: false,
-      message: "Task not found.",
-      error: taskError.message,
-    };
+    return { success: false, message: "Task not found.", error: taskError.message };
   }
 
-  const filePath = task?.file_submissions?.[0];
+  const submissions: string[] = task?.file_submissions ?? [];
 
-  if (!filePath) {
+  if (!submissions.includes(fileToDelete)) {
     return {
       success: false,
-      message: "No submission file found for this task.",
+      message: "The specified file does not exist in this task.",
     };
   }
-
 
   const { error: storageError } = await supabase.storage
     .from("student_submissions")
-    .remove([filePath]);
+    .remove([fileToDelete]);
 
   if (storageError) {
-    console.error("[Delete] Storage deletion error:", storageError);
     return {
       success: false,
       message: "Failed to delete file from storage",
@@ -413,13 +444,14 @@ export async function removeStudentSubmission(taskId: string) {
     };
   }
 
+  const updatedList = submissions.filter((path) => path !== fileToDelete);
+
   const { error: updateError } = await supabase
     .from("task")
-    .update({ file_submissions: [] })
+    .update({ file_submissions: updatedList })
     .eq("id", taskId);
 
   if (updateError) {
-    console.error("[Delete] Task update error:", updateError);
     return {
       success: false,
       message: "File deleted but failed to update task.",
@@ -432,6 +464,7 @@ export async function removeStudentSubmission(taskId: string) {
     message: "Submission successfully removed.",
   };
 }
+
 
 export async function reviewSubmission(task_id:string,IsApproved:boolean, comment:string){
   const supabase = await createClient();
@@ -460,7 +493,7 @@ export async function reviewSubmission(task_id:string,IsApproved:boolean, commen
     
     const { data: taskInfo} = await supabase
       .from("task")
-      .select("assigned_to")
+      .select("assigned_to, org_id")
       .eq("id", task_id)
       .single();
     if (!taskInfo) {
@@ -475,6 +508,7 @@ export async function reviewSubmission(task_id:string,IsApproved:boolean, commen
       await notifyUser({
         user_id: s.id,
         origin: `/dashboard/tasks/${task_id}`,
+        org_id: taskInfo.org_id,
         type: "task_reviewed",
         title: IsApproved ? "Task Approved" : "Task Requires Changes",
         message: comment

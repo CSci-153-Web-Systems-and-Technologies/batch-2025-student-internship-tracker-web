@@ -10,6 +10,8 @@ export default function TaskRow({ task }: { task: Task }) {
         return 75;
       case "verifying":
         return 50;
+      case "in_progress":
+        return 25;
       default:
         return 0;
     }

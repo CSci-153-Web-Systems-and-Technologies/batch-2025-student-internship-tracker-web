@@ -7,13 +7,14 @@ import type { Project, Task } from "@/types";
 import { Notification } from '../types/index';
 
 
-export async function notifyUser({user_id,origin,type,title,message}: 
-  {user_id: string;origin: string;type: string;title: string; message: string;}) {
+export async function notifyUser({user_id,origin,org_id,type,title,message}: 
+  {user_id: string,origin: string,org_id:string,type: string,title: string,message: string}) {
   const supabase = await createClient();
 
   const { error } = await supabase.from("notifications").insert({
     user_id,
     origin,
+    org_id,
     type,
     title,
     message,
