@@ -84,10 +84,10 @@ export default function TaskDetailClient({ task, project_name, isMentor}: TaskDe
     if (!confirm("Are you sure you want to remove this submission?")) return;
 
     try {
-      const res = await removeStudentSubmission(task.id);
+      const res = await removeStudentSubmission(task.id, path);
 
       if (res.success) {
-        setSubmissions((prev) => prev.filter(sub => sub !== path));
+        setSubmissions((prev) => prev.filter((sub) => sub !== path));
         alert("Submission removed successfully!");
         router.refresh?.();
       } else {
@@ -197,7 +197,7 @@ export default function TaskDetailClient({ task, project_name, isMentor}: TaskDe
               </p>
             </div>
 
-            {!isMentor && (
+            {!isMentor && task.status !== "completed" && (
               <label>
                 <input 
                   type="file" 
@@ -274,8 +274,9 @@ export default function TaskDetailClient({ task, project_name, isMentor}: TaskDe
             </div>
           </div>
         )}
+        
         </div>
-        {isMentor && (
+        {isMentor && task.status !== "completed" &&(
           <div className="pt-5 space-y-3">
             <div className="flex flex-col">
               <label className="text-slate-400 mb-1">Comment <span className="text-red-400">*</span></label>

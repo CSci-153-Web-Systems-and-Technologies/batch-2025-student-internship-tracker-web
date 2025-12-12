@@ -372,9 +372,9 @@ export async function uploadStudentSubmission({
 }
 
 
-export async function removeStudentSubmission(taskId: string) {
+export async function removeStudentSubmission(taskId: string, fileToDelete: string) {
   const supabase = await createClient();
-    
+
   const { data: task, error: taskError } = await supabase
     .from("task")
     .select("file_submissions")
@@ -382,30 +382,23 @@ export async function removeStudentSubmission(taskId: string) {
     .single();
 
   if (taskError) {
-    console.error("[Delete] Task fetch error:", taskError);
-    return {
-      success: false,
-      message: "Task not found.",
-      error: taskError.message,
-    };
+    return { success: false, message: "Task not found.", error: taskError.message };
   }
 
-  const filePath = task?.file_submissions?.[0];
+  const submissions: string[] = task?.file_submissions ?? [];
 
-  if (!filePath) {
+  if (!submissions.includes(fileToDelete)) {
     return {
       success: false,
-      message: "No submission file found for this task.",
+      message: "The specified file does not exist in this task.",
     };
   }
-
 
   const { error: storageError } = await supabase.storage
     .from("student_submissions")
-    .remove([filePath]);
+    .remove([fileToDelete]);
 
   if (storageError) {
-    console.error("[Delete] Storage deletion error:", storageError);
     return {
       success: false,
       message: "Failed to delete file from storage",
@@ -413,13 +406,14 @@ export async function removeStudentSubmission(taskId: string) {
     };
   }
 
+  const updatedList = submissions.filter((path) => path !== fileToDelete);
+
   const { error: updateError } = await supabase
     .from("task")
-    .update({ file_submissions: [] })
+    .update({ file_submissions: updatedList })
     .eq("id", taskId);
 
   if (updateError) {
-    console.error("[Delete] Task update error:", updateError);
     return {
       success: false,
       message: "File deleted but failed to update task.",
@@ -432,6 +426,7 @@ export async function removeStudentSubmission(taskId: string) {
     message: "Submission successfully removed.",
   };
 }
+
 
 export async function reviewSubmission(task_id:string,IsApproved:boolean, comment:string){
   const supabase = await createClient();
