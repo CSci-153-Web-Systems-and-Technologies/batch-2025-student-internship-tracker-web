@@ -309,7 +309,7 @@ export default function TaskDetailClient({
           </div>
         )}
 
-        {isMentor && task.status !== "completed" && (
+        {isMentor && task.status !== "completed" && task.file_submissions?.length > 0 && (
           <div className="pt-5 space-y-3">
             <div className="flex flex-col">
               <label className="text-slate-400 mb-1">

@@ -25,8 +25,8 @@ export async function CreateOrganization(formData: FormData) {
     const name = formData.get("name") as string;
     const description = formData.get("description") as string;
 
-    const { user, isMentor } = await getUserProfile();
-    if (!user){
+    const {profile, isMentor } = await getUserProfile();
+    if (!profile){
         throw new Error("Not authenticated");
     }
     if (!isMentor){
@@ -41,7 +41,7 @@ export async function CreateOrganization(formData: FormData) {
             name,
             description,
             invite_code,
-            created_by: user.id
+            created_by: profile.id
         })
         .select()
         .single();
@@ -52,7 +52,8 @@ export async function CreateOrganization(formData: FormData) {
         .from("organization_members")
         .insert({
             org_id: organization.id,
-            user_id: user.id,
+            name: profile.full_name,
+            user_id: profile.id,
             role: "mentor"
         });
 
@@ -67,11 +68,11 @@ export async function JoinOrganization(formData: FormData) {
     }
 
     const supabase = await createClient();
-    const { user, isMentor } = await getUserProfile();
+    const { profile, isMentor } = await getUserProfile();
 
     
 
-    if (!user) throw new Error("Not authenticated");
+    if (!profile) throw new Error("Not authenticated");
 
     const { data: org, error: orgError } = await supabase
         .from("organizations")
@@ -85,7 +86,8 @@ export async function JoinOrganization(formData: FormData) {
         .from("organization_members")
         .insert({
             org_id: org.id,
-            user_id: user.id,
+            name: profile.full_name,
+            user_id: profile.id,
             role: isMentor ? "mentor":"student"
     });
 

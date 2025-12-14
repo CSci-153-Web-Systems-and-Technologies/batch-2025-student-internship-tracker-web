@@ -275,14 +275,14 @@ export async function uploadStudentSubmission({
 
   try {
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return { success: false, error: "User not authenticated" };
     }
 
-    const userId = session.user.id;
+    const userId = user.id;
 
     const { data: taskData, error: taskError } = await supabase
       .from("task")
@@ -293,14 +293,19 @@ export async function uploadStudentSubmission({
     if (taskError || !taskData) {
       return { success: false, error: taskError?.message || "Task not found" };
     }
+    console.log(userId);
 
     const { data: orgMember } = await supabase
       .from("organization_members")
       .select("id")
       .eq("user_id", userId)
-      .maybeSingle();
+      .eq("org_id", taskData.org_id)
+      .single();
+
 
     const isAssigned = taskData.assigned_to?.includes(orgMember?.id);
+
+    console.log(isAssigned);
 
     if (!isAssigned) {
       return { success: false, error: "You are not assigned to this task" };
